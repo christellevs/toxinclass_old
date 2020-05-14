@@ -50,6 +50,10 @@ outpath_atchley_csv = '/content/drive/My Drive/UoS/Year3/COM3001/Data/atchley.cs
 outpath_one_combo_part1 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/combos/one_combo_part1.csv'
 outpath_one_combo_complete = '/content/drive/My Drive/UoS/Year3/COM3001/Results/combos/one_combo_complete.csv'
 
+# one combo bookends
+op_bookend1_raw = '/content/drive/My Drive/UoS/Year3/COM3001/Results/bookends/be_one_combo_raw.csv'
+op_bookend1_prop = '/content/drive/My Drive/UoS/Year3/COM3001/Results/bookends/be_one_combo_prop.csv'
+
 # 2 combo versions
 outpath_two_combo_csv = '/content/drive/My Drive/UoS/Year3/COM3001/Results/combos/two_combo_empty.csv'
 outpath_two_combo_part1 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/combos/two_combo_part1.csv'
@@ -82,6 +86,8 @@ three_combo_total = 24*24*24
 # -----------------------------------------------------------------------------
 # FUNCTIONS
 
+# GENERAL
+
 # save df to .csv file
 def df_to_csv(df, outpath, sep):
   return df.to_csv(outpath, sep, encoding='utf-8')
@@ -93,6 +99,18 @@ def combo_list_to_csv(combo_list, filepath):
       outfile.write(entries)
       outfile.write('\n')
 
+def get_col_sum(df, col):
+  sum = df[col].sum()
+  print(sum)
+  return sum
+
+
+def get_col_diff(df, col1, col2, new_col_name):
+  df[new_col_name] = df[col1] - df[col2]
+
+
+# COMBOS
+
 # get number of combos in a string
 def count_single(combo, sequence):
   return sequence.count(str(combo))
@@ -103,6 +121,40 @@ def account_combos(df, sequence_list, combo_col, result_col):
     for idx, row in df.iterrows():
       df.loc[idx, result_col] += int(count_single(df.loc[idx, combo_col], str(sequence)))
 
+
+# BOOKENDS
+# iterates through df with sequences to return list of starting characters
+def get_codes(df_sequences):
+  start_codes = []
+  end_codes = []
+  for seq in df_sequences['sequence']:
+    start_codes.append(seq[0])
+    end_codes.append(seq[-1])
+  return start_codes, end_codes
+
+# create empty col
+def create_column(df, col_name, value):
+  df[col_name] = value
+
+# counts starting codes and updates bookend df
+def account_code_numbers(df_store, df_sequences, ref_col, start_col, end_col):
+  create_column(df_store, start_col, 0)
+  create_column(df_store, end_col, 0)
+  start_codes, end_codes = get_codes(df_sequences)
+  for index, row in df_store.iterrows():
+    df_store.at[index, start_col] = start_codes.count(row[ref_col])
+    df_store.at[index, end_col] = end_codes.count(row[ref_col])
+
+# calculates percentage of column
+def calculate_percentage(column, sum):
+  return df_train_bookend[column] / sum
+
+def create_bookends_percentage(df_store, df_raw, first_col, last_col, new_first_col, new_last_col):
+  df_store[new_first_col] = (df_raw[first_col] / df_raw[first_col].sum()) * 100
+  df_store[new_last_col] = (df_raw[last_col] / df_raw[last_col].sum()) * 100
+
+
+# 2 COMBO SQUARE
 # fill in 2 combo square dataframe with values from list
 def fill_two_combo_square(df, combo_list):
   total = 0
@@ -208,10 +260,10 @@ atoxic_one_combo_sum = df_one_combo['atoxic_count'].sum()
 print(toxic_one_combo_sum)
 print(atoxic_one_combo_sum)
 
-# adding proportions to one combo table
-df_one_combo['toxic_percent'] = df_one_combo['toxic_count'].apply(lambda x: (x/toxic_one_combo_sum)*100)
-df_one_combo['atoxic_percent'] = df_one_combo['atoxic_count'].apply(lambda x: (x/atoxic_one_combo_sum)*100)
-df_one_combo
+# # adding proportions to one combo table
+# df_one_combo['toxic_percent'] = df_one_combo['toxic_count'].apply(lambda x: (x/toxic_one_combo_sum)*100)
+# df_one_combo['atoxic_percent'] = df_one_combo['atoxic_count'].apply(lambda x: (x/atoxic_one_combo_sum)*100)
+# df_one_combo
 
 # checking one_combo proportions add up
 print(df_one_combo['toxic_percent'].sum())
@@ -229,21 +281,109 @@ print(df_one_combo['atoxic_percent'].sum())
 # # re-saving df to csv
 # df_to_csv(df_one_combo, outpath_one_combo_complete, ',')
 
-# loading csv to df again
-df_one_combo = pd.read_csv(outpath_one_combo_complete, index_col=0)
-df_one_combo
+# # loading csv to df again
+# df_one_combo = pd.read_csv(outpath_one_combo_complete, index_col=0)
+# df_one_combo
 
 # plotting bar chart
 bar1_dims = (20, 16)
 sns.set(style='whitegrid')
 fig_bar1 = plt.subplots(figsize=bar1_dims)
-ax_bar1 = sns.barplot(x=df_one_combo['1combo'], y=df_one_combo['diff_tox_sub_atox'], palette='Blues_d')
+ax_bar1 = sns.barplot(x=df_one_combo['1combo'],
+                      y=df_one_combo['diff_tox_sub_atox'],
+                      palette='Blues_d')
 ax_bar1.set_title('\n'.join(wrap('Percentage difference between average amino acids compositions in protein sequences - (toxic subtracted atoxic)')),
                   fontsize=30)
 ax_bar1.set_xlabel('Amino acid', fontsize=18)
 ax_bar1.set_ylabel('% difference', fontsize=18)
 
 df_one_combo.describe().T[['mean', 'std', 'max','min', '25%', '50%', '75%']]
+
+"""# **1 Combo Bookends**
+---
+"""
+
+# defining dataframe table
+df_one_combo_bookend = df_amino_codes[['single_code']].copy()
+df_one_combo_bookend
+
+# accounting bookends on atoxic and adding to table
+account_code_numbers(df_one_combo_bookend, df_train_toxic, 'single_code', 'toxic_first', 'toxic_last')
+df_one_combo_bookend
+
+# accounting bookends on atoxic and adding to table
+account_code_numbers(df_one_combo_bookend, df_train_atoxic, 'single_code', 'atoxic_first', 'atoxic_last')
+df_one_combo_bookend
+
+#coutning to test
+# sum values
+toxic_first_sum = df_one_combo_bookend['toxic_first'].sum()
+toxic_last_sum = df_one_combo_bookend['toxic_last'].sum()
+atoxic_first_sum = df_one_combo_bookend['atoxic_first'].sum()
+atoxic_last_sum = df_one_combo_bookend['atoxic_last'].sum()
+
+# print testing totals
+print("toxic sum start", toxic_first_sum)
+print("toxic sum end", toxic_last_sum)
+print("atoxic sum start", atoxic_first_sum)
+print("atoxic sum end", atoxic_last_sum)
+
+# # saving one combo raw to csv
+# df_to_csv(df_one_combo_bookend, op_bookend1_raw, ',')
+
+# # creating one combo bookends proprotion
+# df_bookend1_prop = df_amino_codes[['single_code']].copy()
+# df_bookend1_prop
+
+# # creating proportion table
+# create_bookends_percentage(df_bookend1_prop, df_one_combo_bookend,
+#                            'toxic_first', 'toxic_last',
+#                            'toxic_first_prop', 'toxic_last_prop')
+
+# create_bookends_percentage(df_bookend1_prop, df_one_combo_bookend,
+#                            'atoxic_first', 'atoxic_last',
+#                            'atoxic_first_prop', 'atoxic_last_prop')
+# df_bookend1_prop
+
+# check sums
+get_col_sum(df_bookend1_prop, 'toxic_first_prop')
+get_col_sum(df_bookend1_prop, 'toxic_last_prop')
+get_col_sum(df_bookend1_prop, 'atoxic_first_prop')
+get_col_sum(df_bookend1_prop, 'atoxic_last_prop')
+
+# # getting differences
+# get_col_diff(df_bookend1_prop, 'toxic_first_prop', 'atoxic_first_prop', 'tox_sub_atox_first')
+# df_bookend1_prop['tox_sub_atox_first'].abs()
+# get_col_diff(df_bookend1_prop, 'toxic_last_prop', 'atoxic_last_prop', 'tox_sub_atox_last')
+# df_bookend1_prop['tox_sub_atox_last'].abs()
+# df_bookend1_prop
+
+# # saving df to csv
+# df_to_csv(df_bookend1_prop, op_bookend1_prop, ',')
+
+# loading back up from csv
+df_bookend1_prop = pd.read_csv(op_bookend1_prop, index_col=0)
+df_bookend1_prop
+
+# slicing dataframe
+df_bookend1_prop_diff = df_bookend1_prop[['single_code', 'tox_sub_atox_first', 'tox_sub_atox_last']].copy()
+df_bookend1_prop_diff
+
+"""**Bookends1 Graphs**"""
+
+# reshaping df for graphs
+df_bookend1_prop_melted = pd.melt(df_bookend1_prop_diff, id_vars='single_code',
+                                  var_name='position', value_name='percent_diff')
+df_bookend1_prop_melted
+
+# plotting double barplot
+bar2_dims = (20, 16)
+sns.set(style='whitegrid')
+fig_bar2 = plt.subplots(figsize=bar2_dims)
+ax_bar2 = sns.catplot(data=df_bookend1_prop_melted,
+               x='single_code', y='percent_diff',
+               hue='position', kind='bar',
+               palette='Blues_d')
 
 """# **Two Combo**
 
