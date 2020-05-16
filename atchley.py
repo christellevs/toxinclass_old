@@ -45,6 +45,7 @@ ip_train_atoxic = '/content/drive/My Drive/UoS/Year3/COM3001/Data/dataframes/tra
 # OUTPUT files
 
 # TOXIC
+op_toxic_atchley_complete = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_atchley_complete.csv'
 op_toxic_f1 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_f1.csv'
 op_toxic_f2 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_f2.csv'
 op_toxic_f3 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_f3.csv'
@@ -52,6 +53,7 @@ op_toxic_f4 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_f
 op_toxic_f5 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/toxic_f5.csv'
 
 # ATOXIC
+op_atoxic_atchley_complete = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/atoxic_atchley_complete.csv'
 op_atoxic_f1 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/atoxic_f1.csv'
 op_atoxic_f2 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/atoxic_f2.csv'
 op_atoxic_f3 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/atoxic_f3.csv'
@@ -60,6 +62,11 @@ op_atoxic_f5 = '/content/drive/My Drive/UoS/Year3/COM3001/Results/atchley/atoxic
 
 # FUNCTIONS START
 # -----------------------------------------------------------------------------
+
+# GENERAL
+def df_to_csv(df, outpath, sep):
+  return df.to_csv(outpath, sep, encoding='utf-8')
+
 def split_seq(sequence):
   return [char for char in sequence]
 
@@ -75,6 +82,8 @@ def dict_vals_to_array(dictionary):
       values.append(float(val2))
     dictionary[key1] = values
 
+
+# CONVERTING TO ATCHLEY
 # function that swaps letters for atchley array
 def assign_atchley(df, column, empty_val, dictionary):
   for seq_dict in df[column]:
@@ -85,6 +94,50 @@ def assign_atchley(df, column, empty_val, dictionary):
         val_array = dictionary[letter_key]
       seq_dict[letter_key] = val_array
 
+
+# returns a single atchley feature as list
+def get_single_feature_list(letter_list, feature_idx):
+  feature_list = []
+  for letter in letter_list:
+    if dict_atchley.get(letter) == None:
+      feature_list.append(np.nan)
+    else:
+      feature_list.append(float(dict_atchley[letter][feature_idx]))
+  return feature_list
+
+# returns a dictionary of lists of all atchley features
+def get_atchley_features_dict(letter_list):
+  dict_keys = ['f1', 'f2', 'f3', 'f4', 'f5']
+  feature_dict = dict.fromkeys(dict_keys)
+  for idx, (key, value) in enumerate(feature_dict.items()):
+    feature_dict[key] = get_single_feature_list(letter_list, idx)
+  return feature_dict
+
+
+# CHANGE IN ATCHLEY
+# get change in values
+# returns a list
+def get_single_list_change(letter_list):
+  letter_list.insert(0, 0)
+  return ['%.3f' % i for i in (np.diff(letter_list))]
+
+# gets differences for all atchley features
+# returns dictionary
+def get_atchley_attributes_change(features_dict):
+  changes_dict = dict.fromkeys(features_dict)
+  for idx, (key, value) in enumerate(features_dict.items()):
+    changes_dict[key] = get_single_list_change(value)
+    value.pop(0)
+  return changes_dict
+
+# COMMON ATCHLEY
+# function to get all dictionary of lists of atchley features
+def create_atchley_dicts(df, seq_col, new_col, function):
+  df[new_col] = 0
+  df[new_col] = df[new_col].astype('object')
+  for idx, row in df.iterrows():
+    df.at[idx, new_col] = function(df.at[idx, seq_col])
+
 df_atchley = pd.read_csv(ip_atchley, index_col=0, encoding='utf-8')
 df_atchley.rename(columns={'amino.acid': 'amino_acid'}, inplace=True)
 df_atchley.set_index('amino_acid', inplace=True)
@@ -92,12 +145,8 @@ for col in df_atchley['f1': 'f5']:
   df_atchley[col] = df_atchley[col].apply(lambda x: re.sub(r'[^\x00-\x7F]+','-', x)).astype(float)
 df_atchley
 
-# converting atchley factors to dict
+# turning atchley dataframe into dict
 dict_atchley = df_atchley.to_dict('index')
-print([type(k) for k in dict_atchley.keys()])
-print([type(k) for k in dict_atchley.values()])
-print([type(k) for k in dict_atchley.values()])
-
 dict_vals_to_array(dict_atchley)
 dict_atchley
 
@@ -108,6 +157,14 @@ df_train_atoxic = pd.read_csv(ip_train_atoxic, index_col=0)
 # print test
 print(df_train_toxic.head())
 print(df_train_atoxic.head())
+
+# converting toxic sequences into list
+df_train_toxic['sequence'] = df_train_toxic['sequence'].apply(lambda x: split_seq(x))
+df_train_toxic
+
+# converting atoxic sequences into list
+df_train_atoxic['sequence'] = df_train_atoxic['sequence'].apply(lambda x: split_seq(x))
+df_train_atoxic
 
 """# **Toxic Data**
 
@@ -133,131 +190,23 @@ ax_d1.set_title('Distribution of toxic protein sequences lengths', fontsize=30)
 ax_d1.set_xlabel('Sequence Length', fontsize=16)
 ax_d1.set_ylabel('Proportion', fontsize=16)
 
-"""**Single Sequence Testing**"""
+"""**Adding Atchley conversions to toxic dataframe**"""
 
-# test single sequence
-df_single_seq_test = 'ACDGNXPUCC'
-df_single_list_test = split_seq(df_single_seq_test)
-
-# print test
-print(len(df_single_seq_test))
-print(df_single_list_test)
-print(len(df_single_list_test))
-print(df_single_list_test[5])
-print(df_single_list_test.index('C'))
-
-# returns a single atchley feature as list
-def get_single_feature_list(letter_list, feature_idx, atchley_dict, empty_val):
-  feature_list = []
-  for letter in letter_list:
-    if atchley_dict.get(letter) == None:
-      if empty_val == None:
-        feature_list.append(None)
-      else:
-        feature_list.append(float(empty_val))
-    else:
-      feature_list.append(atchley_dict[letter][feature_idx])
-  return feature_list
-
-# returns a dictionary of lists of all atchley features
-def get_atchley_features_dict(letter_list, atchley_dict, empty_val):
-  dict_keys = ['f1', 'f2', 'f3', 'f4', 'f5']
-  feature_dict = dict.fromkeys(dict_keys)
-  for idx, (key, value) in enumerate(feature_dict.items()):
-    feature_dict[key] = get_single_feature_list(letter_list, idx, atchley_dict, empty_val)
-  return feature_dict
-
-# feature_list = get_single_feature_list(df_single_list_test, dict_atchley)
-feature_dict = get_atchley_features_dict(df_single_list_test, dict_atchley, 0)
-
-single_feature_list = get_single_feature_list(df_single_list_test, 0, dict_atchley, 0)
-print(feature_dict)
-print(len(feature_dict))
-print(single_feature_list)
-
-# get change in values
-def get_single_list_change(letter_list, empty_val):
-  letter_list.insert(0, 0)
-  return np.diff(letter_list)
-  # return (j-i for i, j in zip(letter_list[:-1], letter_list[1:]))
-
-new_list = get_single_list_change(single_feature_list, 0)
-print(new_list)
-
-# # single sequence test for minusing
-# def dict_diff(seq_dict, empty_type):
-#   new_dict = OrderedDict()
-#   for idx, (key, value) in enumerate(seq_dict.items()):
-#     np_value = np.array(value)
-
-#     if idx == 0:
-#       new_dict[key+str(idx)] = np.array(value) - np.array([0]*5)
-
-#     else:
-#       if np_value.all() == np.array([0]*5).all():
-#         new_dict[key+list(seq_dict.keys())[idx-1]] = np.array([empty_type]*5)
-
-#       elif np.array(list(seq_dict.values())[idx-1]).all() == np.array([0]*5).all():
-#         new_dict[key+list(seq_dict.keys())[idx-1]] = np.array([empty_type]*5)
-
-#       else:
-#         new_dict[key+list(seq_dict.keys())[idx-1]] = np_value - np.array(list(seq_dict.values())[idx-1])
-
-#   return new_dict
-
-"""**Mini df testing**"""
-
-# mini df for testing
-df_train_toxic_test = df_train_toxic.head(10).copy()
-df_train_toxic_test['sequence'] = df_train_toxic_test['sequence'].apply(lambda x: split_seq(x))
-df_train_toxic_test
-
-# function to get all dictionary of lists of atchley features
-def get_all_atchley_dicts(df, seq_col, new_col, ref_dict, empty_val):
-  df[new_col] = 0
-  df[new_col] = df[new_col].astype('object')
-  for idx, row in df.iterrows():
-    df.at[idx, new_col] = get_atchley_features_dict(df.at[idx, seq_col], ref_dict, empty_val)
-
-get_all_atchley_dicts(df_train_toxic_test, 'sequence', 'atchley_dict_lists', dict_atchley, 0)
-
-df_train_toxic_test
-
-def get_all_atchley_dicts_diff():
-
-# plot
-
-# def atchley_diff(df, seq_column, empty_type, new_col):
-#   df[new_col] = df[new_col].astype('object')
-#   for idx, row in df.iterrows():
-#     df.at[idx, new_col] = dict_diff(df.at[idx, seq_column], empty_type)
-
-# atchley_diff(df_train_toxic_test_zero, 'sequence', None, 'atchley_diff')
-# df_train_toxic_test_zero
-# test_dict = dict(df_train_toxic_test_zero['atchley_diff'].head(1))
-
-# print(test_dict)
-
-"""# **Real**
-
----
-"""
-
-# fill list using atchley tables
-df_train_toxic_test['sequence'] = df_train_toxic_test['sequence'].apply()
-
-# converting toxic sequences into list
-df_train_toxic['sequence'] = df_train_toxic['sequence'].apply(lambda x: split_seq(x))
+# adding atchley dicts to toxic dataframe
+create_atchley_dicts(df_train_toxic, 'sequence', 'atchley_values', get_atchley_features_dict)
+create_atchley_dicts(df_train_toxic, 'atchley_values', 'atchley_change', get_atchley_attributes_change)
 df_train_toxic
 
+test_doct = df_train_toxic['atchley_values'].iloc[0]
+test_doct2 = df_train_toxic['atchley_change'].iloc[0]
 
+test_list = test_doct.get('f1')
+test_list2 = test_doct2.get('f1')
+print(test_list)
+print(len(test_list))
 
-"""Converting Toxic to Atchley
-
-f1 - Polarity
-"""
-
-#
+print(test_list2)
+print(len(test_list2))
 
 """# **Atoxic Data**
 
@@ -280,3 +229,23 @@ ax_d2 = sns.distplot(df_train_atoxic['sequence_length'],
 ax_d1.set_title('Distribution of atoxic protein sequences lengths', fontsize=30)
 ax_d1.set_xlabel('Sequence Length', fontsize=16)
 ax_d1.set_ylabel('Proportion', fontsize=16)
+
+"""**Adding Atchley conversions to toxic dataframe**"""
+
+# adding atchley dicts to toxic dataframe
+create_atchley_dicts(df_train_atoxic, 'sequence', 'atchley_values', get_atchley_features_dict)
+create_atchley_dicts(df_train_atoxic, 'atchley_values', 'atchley_change', get_atchley_attributes_change)
+df_train_atoxic
+
+df_to_csv(df_train_atoxic, op_atoxic_atchley_complete, ',')
+
+test_doct = df_train_atoxic['atchley_values'].iloc[0]
+test_doct2 = df_train_atoxic['atchley_change'].iloc[0]
+
+test_list = test_doct.get('f1')
+test_list2 = test_doct2.get('f1')
+print(test_list)
+print(len(test_list))
+
+print(test_list2)
+print(len(test_list2))
