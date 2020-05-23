@@ -244,6 +244,8 @@ test_doct2 = df_train_atoxic['atchley_change'].iloc[0]
 
 test_list = test_doct.get('f1')
 test_list2 = test_doct2.get('f1')
+
+
 print(test_list)
 print(len(test_list))
 
