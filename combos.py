@@ -454,8 +454,6 @@ df_two_combo['diff_tox_sub_atox'] = (df_two_combo['toxic_count_prop'] - df_two_c
 df_two_combo['abs_diff'] = (df_two_combo['diff_tox_sub_atox']).abs()
 df_two_combo
 
-# # saving two_combo with abs diff to csv
-# df_to_csv(df_two_combo, outpath_two_combo_complete, ',')
 
 df_two_combo = pd.read_csv(outpath_two_combo_complete, index_col=0)
 df_two_combo
