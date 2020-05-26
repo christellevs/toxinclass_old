@@ -141,9 +141,3 @@ m_dt = DecisionTreeClassifier(random_state=random_seed)
 m_dt_dict = run_model(m_dt, k_fold_dicts, op_m_decision_tree)
 
 """# **Running all models**"""
-
-# models list
-models = [m_linear_sgd, m_rfc]
-
-# running all models
-models_dict = run_models(models, k_fold_dicts)
