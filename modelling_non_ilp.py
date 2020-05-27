@@ -15,7 +15,18 @@ Original file is located at
 TOXIFY: https://github.com/tijeco/toxify
 
 ToxClassifier: https://github.com/rgacesa/ToxClassifier
+
+# **0. Setup**
+
+**Mounting Google Drive:**
 """
+
+# mount Google drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+# -----------------------------------------------------------------------------
+# COMMON IMPORTS
 
 import io
 import itertools as ite
@@ -27,43 +38,46 @@ import random
 import sklearn
 import statistics
 
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
+RANDOM_SEED = 273
+random.seed(RANDOM_SEED)
 
-random_seed = 273
-random.seed(random_seed)
+# Change below to path of source code folder
+PATH_TO_FOLDER = '/content/drive/My Drive/UoS/Year3/COM3001/Submission/source_code'
 
 # FILEPATHS
 # -----------------------------------------------------------------------------
-# INPUT files
+
+# processed data
+f_train_complete = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_complete.pickle'
+f_train_atchley_means = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_mean.pickle'
+
+f_train_atchley_raw = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_raw.pickle'
+f_train_atchley_diff = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_diff.pickle'
+f_train_atchley_combined = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_combined.pickle'
 
 # k-fold cross validation dictionaries
-op_5_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p10.pickle'
-op_5_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p15.pickle'
-op_5_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p20.pickle'
+f_5_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p10.pickle'
+f_5_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p15.pickle'
+f_5_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p20.pickle'
 
-op_10_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p10.pickle'
-op_10_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p15.pickle'
-op_10_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p20.pickle'
+f_10_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p10.pickle'
+f_10_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p15.pickle'
+f_10_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p20.pickle'
 
-op_15_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p10.pickle'
-op_15_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p15.pickle'
-op_15_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p20.pickle'
+f_15_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p10.pickle'
+f_15_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p15.pickle'
+f_15_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p20.pickle'
 
-op_20_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p10.pickle'
-op_20_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p15.pickle'
-op_20_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p20.pickle'
+f_20_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p10.pickle'
+f_20_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p15.pickle'
+f_20_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p20.pickle'
 
 # models
-op_m_linear_sgd = '/content/drive/My Drive/UoS/Year3/COM3001/Results/models/m_linear_sgd.pickle'
-op_m_random_forest = '/content/drive/My Drive/UoS/Year3/COM3001/Results/models/m_random_forest.pickle'
-op_m_decision_tree = '/content/drive/My Drive/UoS/Year3/COM3001/Results/models/m_decision_tree.pickle'
+f_m_linear_sgd = PATH_TO_FOLDER + '/models/m_linear_sgd.pickle'
+f_m_random_forest = PATH_TO_FOLDER + '/models/m_random_forest.pickle'
+f_m_decision_tree = PATH_TO_FOLDER + '/models/m_decision_tree.pickle'
 
-
-# FUNCTIONS START
+# COMMON FUNCTIONS START
 # -----------------------------------------------------------------------------
 
 # for writing and reading data to/from a binary file
@@ -73,71 +87,234 @@ def pickle_method(fname, method, context):
     elif method == 'rb':
         return pickle.load(open(fname, method))
 
+"""# **1. Loading Pre-Processed datasets**"""
+
+# unpickling data with complete atchley method
+df_combined = pickle_method(f_train_atchley_combined, 'rb', '')
+df_combined.head(5)
+
+"""# **2. Training vs Validation splitting**"""
+
+# -----------------------------------------------------------------------------
+# SPLITTING IMPORTS
+
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
+
+# split into training and validation sets
+drop_cols = ['toxic', 'identifier', 'sequence', 'atchley_raw_avg', 'atchley_diff_avg']
+y_labels = df_combined['toxic']
+x_features = df_combined['matrix_raw']
+
+# checking length
+print(len(y_labels))
+print(len(x_features))
+
+# SPLITTING FUNCTIONS START
+# -----------------------------------------------------------------------------
+
+# VARIABLES
+K_FOLDS = 5
+VAL_SIZE = 0.20
+
+sss = StratifiedShuffleSplit(n_splits=K_FOLDS, test_size=VAL_SIZE, random_state=RANDOM_SEED)
+
+# get splits from k fold
+def get_kfold_splits(fname):
+  fold_dict = {}
+  i = 1
+  print(sss)
+  print('Number of k-fold splits: ', sss.get_n_splits())
+  for train_idx, val_idx in sss.split(x_features, y_labels):
+    x_train, x_val = x_features.iloc[train_idx], x_features.iloc[val_idx]
+    y_train, y_val = y_labels.iloc[train_idx], y_labels.iloc[val_idx]
+    fold_dict[str(i)] = [x_train, x_val, y_train, y_val]
+    i += 1
+  pickle_method(fname, 'wb', fold_dict)
+
+# get splits from k fold
+def get_kfold_dict():
+  fold_dict = {}
+  i = 1
+  print(sss)
+  print('Number of k-fold splits: ', sss.get_n_splits())
+  for train_idx, val_idx in sss.split(x_features, y_labels):
+    x_train, x_val = x_features.iloc[train_idx], x_features.iloc[val_idx]
+    y_train, y_val = y_labels.iloc[train_idx], y_labels.iloc[val_idx]
+    fold_dict[str(i)] = [x_train, x_val, y_train, y_val]
+    i += 1
+  return fold_dict
+
+"""**Stratified Splitting Dataset**"""
+
+# getting k-fold splits
+# indexes:
+# 0 -> x_train_vectorised
+# 1 -> x_val_vectorised
+# 2 -> y_train
+# 3 -> y_val
+get_kfold_splits(f_20_fold_p20)
+
+"""**Loading back K-Folds Splits**"""
+
+# loading k-fold files
+
+fold_5_10p = pickle_method(f_5_fold_p10, 'rb', '')
+print('k-folds: ', len(fold_5_10p))
+fold_5_15p = pickle_method(f_5_fold_p15, 'rb', '')
+print('k-folds: ', len(fold_5_15p))
+fold_5_20p = pickle_method(f_5_fold_p20, 'rb', '')
+print('k-folds: ', len(fold_5_20p))
+
+fold_10_10p = pickle_method(f_10_fold_p10, 'rb', '')
+print('k-folds: ', len(fold_10_10p))
+fold_10_15p = pickle_method(f_10_fold_p15, 'rb', '')
+print('k-folds: ', len(fold_10_15p))
+fold_10_20p = pickle_method(f_10_fold_p20, 'rb', '')
+print('k-folds: ', len(fold_10_20p))
+
+fold_15_10p = pickle_method(f_15_fold_p10, 'rb', '')
+print('k-folds: ', len(fold_15_10p))
+fold_15_15p = pickle_method(f_15_fold_p15, 'rb', '')
+print('k-folds: ', len(fold_15_15p))
+fold_15_20p = pickle_method(f_15_fold_p20, 'rb', '')
+print('k-folds: ', len(fold_15_20p))
+
+fold_20_10p = pickle_method(f_20_fold_p10, 'rb', '')
+print('k-folds: ', len(fold_20_10p))
+fold_20_15p = pickle_method(f_20_fold_p15, 'rb', '')
+print('k-folds: ', len(fold_20_15p))
+fold_20_20p = pickle_method(f_20_fold_p20, 'rb', '')
+print('k-folds: ', len(fold_20_20p))
+
+"""**Single Dictionary**"""
+
+# loading k-fold files
+k_fold_dicts = {'fold_5_10p': fold_5_10p,
+                'fold_5_15p': fold_5_15p,
+                'fold_5_20p': fold_5_20p,
+                'fold_10_10p': fold_10_10p,
+                'fold_10_15p': fold_10_15p,
+                'fold_10_20p': fold_10_20p,
+                'fold_15_10p': fold_15_10p,
+                'fold_15_15p': fold_15_15p,
+                'fold_15_20p': fold_15_20p,
+                'fold_20_10p': fold_20_10p,
+                'fold_20_15p': fold_20_15p,
+                'fold_20_20p': fold_20_20p}
+
+print('Total k-folds: ', len(k_fold_dicts))
+
+"""# **3. Modelling**"""
+
+# -----------------------------------------------------------------------------
+# COMMON IMPORTS
+
+import multiprocessing
+
+from IPython.display import Image
+
+from keras.callbacks import EarlyStopping
+from keras.initializers import Constant
+from keras.layers import Conv1D, Conv2D, Embedding, Flatten, GlobalMaxPooling1D
+from keras.layers import GRU, MaxPooling1D, SpatialDropout1D
+from keras.layers.core import Activation, Dropout, Dense
+from keras.layers.embeddings import Embedding
+from keras.models import Sequential
+from keras.utils.vis_utils import model_to_dot
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.tree import DecisionTreeClassifier
+
+# MODELLING FUNCTIONS START
+# -----------------------------------------------------------------------------
 
 # fit model to data
 def fit_model_to_folds(model, k_folds_dict):
-    scores = []
-    i = 1
-    for fold in k_folds_dict:
-        fitted_model = model.fit(k_folds_dict[fold][0], k_folds_dict[fold][2])
-        score = accuracy_score(k_folds_dict[fold][3], fitted_model.predict(k_folds_dict[fold][1]))
-        print('{} of k-fold {}'.format(fold, len(k_folds_dict)), ' --> ROC AUC score:', score)
-        scores.append(score)
-        i += 1
-
-    mean_score = statistics.mean(scores)
-    print("\nMean model score: %.3f" % mean_score)
-    return mean_score
-
+  scores = []
+  i = 1
+  for fold in k_folds_dict:
+    fitted_model = model.fit(k_folds_dict[fold][0], k_folds_dict[fold][2])
+    score = accuracy_score(k_folds_dict[fold][3], fitted_model.predict(k_folds_dict[fold][1]))
+    print('{} of k-fold {}'.format(fold, len(k_folds_dict)), ' --> ROC AUC score:', score)
+    scores.append(score)
+    i += 1
+  mean_score = statistics.mean(scores)
+  print("\nMean model score: %.3f" % mean_score)
+  return mean_score
 
 # run model, save results to dictionary
 def run_model(model, k_folds_dicts, filename):
-    model_results = {}
-    for key, value in k_folds_dicts.items():
-        print('\nCV:', key)
-        model_results[key] = fit_model_to_folds(model, value)
-    pickle_method(filename, 'wb', model_results)
-    return model_results
-
+  model_results = {}
+  for key, value in k_folds_dicts.items():
+    print('\nCV:', key)
+    model_results[key] = fit_model_to_folds(model, value)
+  pickle_method(filename, 'wb', model_results)
+  return model_results
 
 # run all models, save results to a dictionary of dictionaries
 def run_all_models(models, k_fold_dicts):
-    models_dict = {}
-    for model in models:
-        print('\nModel:', model)
-        models_dict[model] = run_model(model)
-    return models_dict
+  models_dict = {}
+  for model in models:
+    print('\nModel:', model)
+    models_dict[model] = run_model(model)
+  return models_dict
 
+"""# **3.1 Complex Modelling**
 
-# loading k-fold files
-k_fold_dicts = {'fold_5_10p': pickle_method(op_5_fold_p10, 'rb', ''),
-                'fold_5_15p': pickle_method(op_5_fold_p15, 'rb', ''),
-                'fold_5_20p': pickle_method(op_5_fold_p20, 'rb', ''),
-                'fold_10_10p': pickle_method(op_10_fold_p10, 'rb', ''),
-                'fold_10_15p': pickle_method(op_10_fold_p15, 'rb', ''),
-                'fold_10_20p': pickle_method(op_10_fold_p20, 'rb', ''),
-                'fold_15_10p': pickle_method(op_15_fold_p10, 'rb', ''),
-                'fold_15_15p': pickle_method(op_15_fold_p15, 'rb', ''),
-                'fold_15_20p': pickle_method(op_15_fold_p20, 'rb', ''),
-                'fold_20_10p': pickle_method(op_20_fold_p10, 'rb', ''),
-                'fold_20_15p': pickle_method(op_20_fold_p15, 'rb', ''),
-                'fold_20_20p': pickle_method(op_20_fold_p20, 'rb', '')}
+**CNN Model**
+"""
 
-print(len(k_fold_dicts.get('fold_20_20p')))
+# Common state model variables
+EPOCHS = 10
+BATCH_SIZE = 128
 
-"""# **Models**"""
+# testing on single val fold
+trial_5_20p_fold = get_kfold_dict()
+
+print(len(trial_5_20p_fold.get('1')[0]))
+
+# creating pre-trained embedding layer for LSTM and CNN
+embedding_layer = Embedding(vocab_size, EMBEDDING_DIM, input_length=MAX_WORDS, weights=[embedding_matrix], trainable=True)
+
+# enabling callbacks so model stops in case validation loss keeps increasing
+callbacks = [EarlyStopping(monitor='val_loss', min_delta=0, patience=2, verbose=0, mode='auto')]
+
+# defining CNN model
+m_cnn = Sequential()
+m_cnn.add(Conv1D(filters=32, kernel_size=8, activation='relu'))
+m_cnn.add(MaxPooling1D(pool_size=2))
+m_cnn.add(Flatten())
+m_cnn.add(Dense(256, activation='relu'))
+m_cnn.add(Dense(1, activation='sigmoid'))
+m_cnn.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+m_cnn_hist = fit_model_to_folds(m_cnn, test_5_20p_fold)
+
+# CNN model summary
+m_cnn.summary()
+Image(model_to_dot(m_cnn).create(prog='dot', format='png'))
+
+"""# **3.2 Other Modelling**"""
 
 # model linear sgd classifier: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html
-m_linear_sgd = SGDClassifier(loss='modified_huber', random_state=random_seed)
-m_linear_sgd_dict = run_model(m_linear_sgd, k_fold_dicts, op_m_linear_sgd)
+m_linear_sgd = SGDClassifier(loss='modified_huber', random_state=RANDOM_SEED)
+m_linear_sgd_dict = run_model(m_linear_sgd, k_fold_dicts, f_m_linear_sgd)
 
 # model random forest: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-m_rfc = RandomForestClassifier(random_state=random_seed)
-m_rfc_dict = run_model(m_rfc, k_fold_dicts, op_m_random_forest)
+m_rfc = RandomForestClassifier(random_state=RANDOM_SEED)
+m_rfc_dict = run_model(m_rfc, k_fold_dicts, f_m_random_forest)
 
 # model decision tree: https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
-
-m_dt = DecisionTreeClassifier(random_state=random_seed)
-m_dt_dict = run_model(m_dt, k_fold_dicts, op_m_decision_tree)
+m_dt = DecisionTreeClassifier(random_state=RANDOM_SEED)
+m_dt_dict = run_model(m_dt, k_fold_dicts, f_m_decision_tree)
 
 """# **Running all models**"""
+
+# models list
+models = [m_linear_sgd, m_rfc]
+
+# running all models
+models_dict = run_models(models, k_fold_dicts)
