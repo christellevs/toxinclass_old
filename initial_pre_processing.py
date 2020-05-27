@@ -18,11 +18,20 @@ ToxClassifier: https://github.com/rgacesa/ToxClassifier
 
 
 ---
+
+# **0. Setup**
+
+Mounting to drive
 """
+
+# mount Google drive
+from google.colab import drive
+drive.mount('/content/drive')
 
 # -----------------------------------------------------------------------------
 # INSTALLS
 !pip install biopython
+!pip install modin[all]
 
 # -----------------------------------------------------------------------------
 # IMPORTS
@@ -51,44 +60,53 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from sklearn.utils import resample
 
-random_seed = 273
-random.seed(random_seed)
+RANDOM_SEED = 273
+random.seed(RANDOM_SEED)
+
+# Change below to path of source code folder
+PATH_TO_FOLDER = '/content/drive/My Drive/UoS/Year3/COM3001/Submission/source_code'
 
 # FILEPATHS
 # -----------------------------------------------------------------------------
-# INPUT files
 
 # training data
-ip_toxic_fasta = '/content/drive/My Drive/UoS/Year3/COM3001/Data/pre.venom.fasta'
-ip_atoxic_fasta = '/content/drive/My Drive/UoS/Year3/COM3001/Data/pre.NOT.venom.fasta'
+f_toxic_fasta = PATH_TO_FOLDER + '/raw_data/training_data/pre.venom.fasta'
+f_atoxic_fasta = PATH_TO_FOLDER + '/raw_data/training_data/pre.NOT.venom.fasta'
 
 # reference values files
-ip_amino_acid = '/content/drive/My Drive/UoS/Year3/COM3001/Data/ReferenceValues/amino_acid_codes.csv'
-ip_atchley = '/content/drive/My Drive/UoS/Year3/COM3001/Data/ReferenceValues/atchley.csv'
+f_amino_acid = PATH_TO_FOLDER + '/reference_data/amino_acid_codes.csv'
+f_atchley = PATH_TO_FOLDER + '/reference_data/atchley.csv'
 
-# -----------------------------------------------------------------------------
-# OUTPUT files
-op_train_complete = '/content/drive/My Drive/UoS/Year3/COM3001/Data/dataframes/train_complete.pickle'
-op_train_atchley_means = '/content/drive/My Drive/UoS/Year3/COM3001/Data/dataframes/train_atchley_mean.pickle'
+f_atchley_dict = PATH_TO_FOLDER + '/reference_data/atchley_dict.pickle'
+f_atchley_table = PATH_TO_FOLDER + '/reference_data/atchley_table.pickle'
+
+# processed data
+f_train_proteins_list = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_proteins_list.pickle'
+# f_train_complete = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_complete.pickle'
+# f_train_atchley_means = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_mean.pickle'
+
+f_train_atchley_raw = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_raw.pickle'
+f_train_atchley_diff = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_diff.pickle'
+f_train_atchley_combined = PATH_TO_FOLDER + '/pre_processing_files/dataframes/train_atchley_combined.pickle'
 
 # k-fold cross validation dictionaries
-op_5_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p10.pickle'
-op_5_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p15.pickle'
-op_5_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/5_fold_p20.pickle'
+f_5_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p10.pickle'
+f_5_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p15.pickle'
+f_5_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p20.pickle'
 
-op_10_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p10.pickle'
-op_10_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p15.pickle'
-op_10_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/10_fold_p20.pickle'
+f_10_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p10.pickle'
+f_10_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p15.pickle'
+f_10_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p20.pickle'
 
-op_15_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p10.pickle'
-op_15_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p15.pickle'
-op_15_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/15_fold_p20.pickle'
+f_15_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p10.pickle'
+f_15_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p15.pickle'
+f_15_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/15_fold_p20.pickle'
 
-op_20_fold_p10 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p10.pickle'
-op_20_fold_p15 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p15.pickle'
-op_20_fold_p20 = '/content/drive/My Drive/UoS/Year3/COM3001/Data/CrossVal/20_fold_p20.pickle'
+f_20_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p10.pickle'
+f_20_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p15.pickle'
+f_20_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/20_fold_p20.pickle'
 
-# FUNCTIONS START
+# COMMON FUNCTIONS START
 # -----------------------------------------------------------------------------
 
 # COMMON VARIABLE NAMES
@@ -96,16 +114,16 @@ invalid_letters = ['B', 'J', 'O', 'U', 'X', 'Z']
 
 # GENERAL
 # save df to a csv file
-def df_to_csv(df, outpath, sep):
-  df.to_csv(outpath, sep, encoding='utf-8')
+def df_to_csv(df, fname, sep):
+  df.to_csv(fname, sep, encoding='utf-8')
 
 # read in csv to df
-def cvs_to_df(inpath, col_idx):
-  return pd.read_csv(inpath, index_col=col_idx, encoding='utf-8')
+def cvs_to_df(fname, col_idx):
+  return pd.read_csv(fname, index_col=col_idx, encoding='utf-8')
 
-# splits sequence and saves to a dictionary
+# splits sequence and saves to list
 def split_seq(sequence):
-  return {'letter': [char for char in sequence]}
+  return [char for char in sequence]
 
 # opens fasta file and creates dataframe
 def parse_fasta(path_fasta, toxic):
@@ -144,28 +162,38 @@ def dist_graph(df, x_dim, y_dim, x_axis_col, title, x_label, y_label, colour, bi
   ax.set_xlabel(x_label, fontsize=16)
   ax.set_ylabel(y_label, fontsize=16)
 
-a = [1, 3, 5, 44, 5]
-b = ['a', 'd', 't', 'o', 'p']
+# a = [1, 3, 5, 44, 5]
+# b = ['a', 'd', 't', 'o', 'p']
 
-for i, (vol1, vol2) in enumerate(zip(a, b):
-  print(i,vol1, vol2)
+# for i, (vol1, vol2) in enumerate(zip(a, b):
+#   print(i,vol1, vol2)
 
-"""# **Atchley**
+
+# df = df.drop('letters', 1).assign(**df['letters'].dropna().apply(pd.Series))
+
+"""# **1. Loading atchley**
 
 ---
 """
 
-# loading atchley csv data and turning to dict
-df_atchley = cvs_to_df(ip_atchley, 0)
-df_atchley.rename(columns={'amino.acid': 'amino_acid'}, inplace=True)
-df_atchley.set_index('amino_acid', inplace=True)
-for col in df_atchley['f1': 'f5']:
-  df_atchley[col] = df_atchley[col].apply(lambda x: re.sub(r'[^\x00-\x7F]+','-', x)).astype(float)
-dict_atchley = df_atchley.T.to_dict('list')
+# # loading atchley csv data and turning to dict
+# df_atchley = cvs_to_df(f_atchley, 0)
+# df_atchley.rename(columns={'amino.acid': 'amino_acid'}, inplace=True)
+# df_atchley.set_index('amino_acid', inplace=True)
 
+# for col in df_atchley['f1': 'f5']:
+#   df_atchley[col] = df_atchley[col].apply(lambda x: re.sub(r'[^\x00-\x7F]+','-', x)).astype(float)
+
+# pickle_method(f_atchley_table, 'wb', df_atchley)
+
+# dict_atchley = df_atchley.T.to_dict('list')
+# pickle_method(f_atchley_dict, 'wb', dict_atchley)
+
+# loading pickled Atchley dictionary
+dict_atchley = pickle_method(f_atchley_dict, 'rb', '')
 dict_atchley
 
-"""# **Defining Objects**
+"""# **2. Defining ProteinSequence Objects**
 
 ---
 """
@@ -179,63 +207,60 @@ class ProteinSequence:
     self.identifier = identifier
     self.toxic = toxic
     self.length = length
-    self.sequence_dict = sequence
+    self.sequence = sequence
+    self.seq_dict_raw = {}
+    self.seq_dict_diff = {}
+    self.matrix_raw = np.zeros((5, length))
+    self.matrix_diff = np.zeros((5, length))
 
-  def to_dict(self):
-    return {
-        'identifier': self.identifier,
-        'toxic': self.toxic,
-        'length': self.length,
-        'letters': self.sequence_dict
-    }
+  def to_dict_raw(self):
+    return {'identifier': self.identifier,
+            'toxic': self.toxic,
+            'length': self.length,
+            'sequence': self.sequence,
+            'f1_raw': self.matrix_raw[0],
+            'f2_raw': self.matrix_raw[1],
+            'f3_raw': self.matrix_raw[2],
+            'f4_raw': self.matrix_raw[3],
+            'f5_raw': self.matrix_raw[4],
+            'atchley_raw_avg': np.average(self.matrix_raw, axis=0)}
 
-# -----------------------------------------------
-# APPENDING RAW ATCHLEY VALUES
-# get atchley values
-def get_atchley_vals(letters, idx):
-  return [float(dict_atchley.get(i)[idx]) for i in letters]
+  def to_dict_diff(self):
+    return {'identifier': self.identifier,
+            'toxic': self.toxic,
+            'length': self.length,
+            'sequence': self.sequence,
+            'f1_diff': self.matrix_diff[0],
+            'f2_diff': self.matrix_diff[1],
+            'f3_diff': self.matrix_diff[2],
+            'f4_diff': self.matrix_diff[3],
+            'f5_diff': self.matrix_diff[4],
+            'atchley_diff_avg': np.average(self.matrix_diff, axis=0)}
 
-# matches each atchley value to each amino acid
-def get_atchley_values(seq_dict):
-  sequence = seq_dict.get('letter')
-  seq_dict['f1'] = get_atchley_vals(sequence, 0)
-  seq_dict['f2'] = get_atchley_vals(sequence, 1)
-  seq_dict['f3'] = get_atchley_vals(sequence, 2)
-  seq_dict['f4'] = get_atchley_vals(sequence, 3)
-  seq_dict['f5'] = get_atchley_vals(sequence, 4)
+  def to_dict_combined(self):
+    return {'identifier': self.identifier,
+            'toxic': self.toxic,
+            'length': self.length,
+            'sequence': self.sequence,
+            'matrix_raw': self.matrix_raw,
+            'matrix_diff': self.seq_dict_diff,
+            'f1_raw': self.matrix_raw[0],
+            'f2_raw': self.matrix_raw[1],
+            'f3_raw': self.matrix_raw[2],
+            'f4_raw': self.matrix_raw[3],
+            'f5_raw': self.matrix_raw[4],
+            'atchley_raw_avg': np.average(self.matrix_raw, axis=0),
+            'f1_diff': self.matrix_diff[0],
+            'f2_diff': self.matrix_diff[1],
+            'f3_diff': self.matrix_diff[2],
+            'f4_diff': self.matrix_diff[3],
+            'f5_diff': self.matrix_diff[4],
+            'atchley_diff_avg': np.average(self.matrix_diff, axis=0)}
 
-# appends the atchley values to the dictionary of a ProteinSequence object
-def append_atchley_values(protein_seq_list):
-  for protein in protein_seq_list:
-    get_atchley_values(protein.sequence_dict)
-
-# -----------------------------------------------
-# APPENDING CHANGES IN ATCHLEY VALUES
-# calculates sequential change for single atchley value
-def get_change_list(atchley_list):
-  atchley_list.insert(0, 0)
-  change_list = [i for i in (np.diff(atchley_list))]
-  atchley_list.pop(0)
-  return change_list
-
-# calculates sequential change for each atchley value
-def get_atchley_change(seq_dict):
-  seq_dict['f1_d'] = get_change_list(seq_dict.get('f1'))
-  seq_dict['f2_d'] = get_change_list(seq_dict.get('f2'))
-  seq_dict['f3_d'] = get_change_list(seq_dict.get('f3'))
-  seq_dict['f4_d'] = get_change_list(seq_dict.get('f4'))
-  seq_dict['f5_d'] = get_change_list(seq_dict.get('f5'))
-
-# appends the sequential changes in atchley values to the existing dictionary
-def append_atchley_change(protein_seq_list):
-  for protein in protein_seq_list:
-    get_atchley_change(protein.sequence_dict)
-
-"""# **Loading and cleaning Data**
+"""# **3. Loading, Parsing and Cleaning Data**
 
 
 1.   Removing sequences that contains letters not in Atchley dictionary
-2.   Downsampling
 
 
 
@@ -244,41 +269,20 @@ def append_atchley_change(protein_seq_list):
 """
 
 # parsing toxic and atoxic data from fasta files
-toxic_list = parse_fasta(ip_toxic_fasta, 1)
-atoxic_list = parse_fasta(ip_atoxic_fasta, 0)
+toxic_list = parse_fasta(f_toxic_fasta, 1)
+atoxic_list = parse_fasta(f_atoxic_fasta, 0)
 
 total_toxic_seqs = len(toxic_list)
 print('Total toxic sequences: ', total_toxic_seqs)
 print('Total atoxic sequences: ', len(atoxic_list))
 
-# # adding 'ProteinSequence' list to df
-# df_toxic = pd.DataFrame.from_records([p.to_dict() for p in toxic_list])
-# df_atoxic = pd.DataFrame.from_records([p.to_dict() for p in atoxic_list])
-
-# # df_toxic.head(5)
-# df_atoxic.head(5)
-
-"""**Distribution analysis pre downsample**"""
-
-# # data distribution for toxic class
-# dist_graph(df_toxic, 14, 8, 'length',
-#            'Distribution of toxic protein sequences lengths',
-#            'Sequence Length', '', 'seagreen', 62)
-
-# # raw distribution of atoxic protein sequence lengths
-# dist_graph(df_atoxic, 18, 8, 'length',
-#            'Distribution of atoxic protein sequences lengths pre downsampling',
-#            'Sequence Length', '', 'seagreen', 200)
-
-"""# **Downsampling**"""
+"""# **4. Downsampling**"""
 
 # downsamplig atoxic
-atoxic_downsampled = resample(atoxic_list, replace=False, n_samples=total_toxic_seqs, random_state=random_seed)
+atoxic_downsampled = resample(atoxic_list, replace=False, n_samples=total_toxic_seqs, random_state=RANDOM_SEED)
+print('Total protein sequences in atoxic list post-downsampling: ', len(atoxic_downsampled))
 
-# print test
-print('Total protein sequences in atoxic list post downsampling: ', len(atoxic_downsampled))
-
-"""Comparing pre and post downsmaple distrbutions for sequence length"""
+"""**Comparing pre and post downsmaple distrbutions for sequence length**"""
 
 # # downsampled distribution of atoxic protein sequence lengths
 # dist_graph(df_atoxic_downsampled, 18, 8, 'length',
@@ -312,83 +316,133 @@ print('Total protein sequences in atoxic list post downsampling: ', len(atoxic_d
 # plt.show()
 # print(df_toxic['length'].describe().T[['mean', 'std', 'max','min', '25%', '50%', '75%']].round(decimals=2))
 
-"""# **Joining 2 datasets**"""
+"""# **5. Combining Datasets & Appending Values**"""
 
 # appending toxic and atoxic 'ProteinSequence' lists
 proteins = toxic_list + atoxic_downsampled
 print(len(proteins))
 
+# -----------------------------------------------
+# FUNCTIONS APPENDING ATCHLEY VALUES
+
+# get atchley values - returns list of values
+def get_atchley_values_list(letters, idx):
+  return [float(dict_atchley.get(i)[idx]) for i in letters]
+
+# matches each atchley value to each amino acid
+def get_atchley_values_raw(sequence, seq_dict_r):
+  seq_dict_r['f1'] = get_atchley_values_list(sequence, 0)
+  seq_dict_r['f2'] = get_atchley_values_list(sequence, 1)
+  seq_dict_r['f3'] = get_atchley_values_list(sequence, 2)
+  seq_dict_r['f4'] = get_atchley_values_list(sequence, 3)
+  seq_dict_r['f5'] = get_atchley_values_list(sequence, 4)
+
+# -----------------------------------------------
+# calculates sequential change for single atchley value
+def get_change_list(atchley_list):
+  atchley_list.insert(0, 0)
+  change_list = [i for i in (np.diff(atchley_list))]
+  atchley_list.pop(0)
+  return change_list
+
+# calculates sequential change for each atchley value
+def get_atchley_diff(seq_dict_r, seq_dict_d):
+  seq_dict_d['f1_d'] = get_change_list(seq_dict_r.get('f1'))
+  seq_dict_d['f2_d'] = get_change_list(seq_dict_r.get('f2'))
+  seq_dict_d['f3_d'] = get_change_list(seq_dict_r.get('f3'))
+  seq_dict_d['f4_d'] = get_change_list(seq_dict_r.get('f4'))
+  seq_dict_d['f5_d'] = get_change_list(seq_dict_r.get('f5'))
+
+# appends the atchley values to the dictionary of a ProteinSequence object
+def append_atchley_values(proteins_list):
+  for protein in proteins_list:
+    get_atchley_values_raw(protein.sequence, protein.seq_dict_raw)
+    get_atchley_diff(protein.seq_dict_raw, protein.seq_dict_diff)
+
 # appending atchley values
 append_atchley_values(proteins)
-append_atchley_change(proteins)
 
-print(len(proteins[0].sequence_dict))
+"""**Appending Matrices**"""
 
-# print test
-print(type(proteins[0].sequence_dict.get('f5_d')[0]))
+# -----------------------------------------------
+# FUNCTIONS UPDATING MATRICES
 
-# adding proteins list to dataframe, each dictionary to
-df = pd.DataFrame.from_records([p.to_dict() for p in proteins])
-df = df.drop('letters', 1).assign(**df['letters'].dropna().apply(pd.Series))
-df
+# returns matrix from input dictionary
+def get_matrix_values(seq_dict):
+  return np.array([seq_dict[i] for i in seq_dict.keys()])
 
-# # pickling file
-# pickle_method(op_train_complete, 'wb', df)
+# updates both matrices
+def update_matrices(protein_seq_list):
+  for protein in protein_seq_list:
+    protein.matrix_raw = get_matrix_values(protein.seq_dict_raw)
+    protein.matrix_diff = get_matrix_values(protein.seq_dict_diff)
 
-# unpickling method
-df = pickle_method(op_train_complete, 'rb', '')
-df
+# updating matrices
+update_matrices(proteins)
 
-print('Checking for null columns:\n')
-df.isnull().sum()
+# pickling protein list objects to file for later use
+pickle_method(f_train_proteins_list, 'wb', proteins)
 
-print('Checking value counts for each class:\n1 == toxic\n0 == atoxic\n----------')
-df['toxic'].value_counts()
+# unpickling protein list objects
+proteins = pickle_method(f_train_proteins_list, 'rb', '')
 
-"""**Preprocessing**"""
+# adding proteins list to dataframes
+df_raw = pd.DataFrame.from_records([p.to_dict_raw() for p in proteins])
+df_diff = pd.DataFrame.from_records([p.to_dict_diff() for p in proteins])
+df_combined = pd.DataFrame.from_records([p.to_dict_combined() for p in proteins])
 
-# creating a df with mean values of atchley dictionaries
-df_means = df.copy()
-df_means
+# pickling df files
+pickle_method(f_train_atchley_raw, 'wb', df_raw)
+pickle_method(f_train_atchley_diff, 'wb', df_diff)
+pickle_method(f_train_atchley_combined, 'wb', df_combined)
 
-# calculating means of atchley values
-def get_atchley_means(df, start_col, end_col):
-  col = start_col
-  while (col <= end_col):
-    for i, row in df.iterrows():
-      df.at[i, df.columns[col]] = statistics.mean(df.at[i, df.columns[col]])
-    col += 1
+# unpickling df files
+df_raw = pickle_method(f_train_atchley_raw, 'rb', '')
+df_diff = pickle_method(f_train_atchley_diff, 'rb', '')
+df_combined = pickle_method(f_train_atchley_combined, 'rb', '')
 
-# df_means_test = df_means_test.apply(lambda x: [statistics.mean(i) for i in x] if x.isNumeric()
-get_atchley_means(df_means, 4, 13)
-df_means
+df_raw.head(5)
 
-# # pickling file
-# pickle_method(op_train_atchley_means, 'wb', df_means)
+df_diff.head(5)
 
-# unpickling file
-df_means = pickle_method(op_train_atchley_means, 'rb', '')
+df_combined.head(5)
 
-print(df_means['f1'][0])
+print((type(df_raw['atchley_raw_avg'][0])))
+print((type(df_diff['atchley_diff_avg'][0])))
+print((type(df_combined['atchley_diff_avg'][0])))
+print((type(df_combined['matrix_raw'][0])))
+print((type(df_combined['matrix_diff'][0])))
 
-df_means
+print('Raw training set info:\n')
+df_raw.info()
+
+print('\Diff training set info:\n')
+df_diff.info()
+
+print('\nCombined training set info:\n')
+df_combined.info()
+
+print('Checking value counts for each class in df raw:\n1 == toxic\n0 == atoxic\n----------')
+print(df_raw['toxic'].value_counts())
+
+print('\nChecking value counts for each class in df diff:\n1 == toxic\n0 == atoxic\n----------')
+print(df_diff['toxic'].value_counts())
+
+print('\nChecking value counts for each class in df combined:\n1 == toxic\n0 == atoxic\n----------')
+print(df_combined['toxic'].value_counts())
 
 """---
 
 
-# **Training vs Validation splitting**
+# **6. Training vs Validation splitting**
 """
 
-# split into training and validation sets
-y_labels = df_means['toxic']
-x_features = df_means.drop(['toxic', 'identifier', 'letter'], axis=1)
-
-# checking length
-print(len(y_labels))
-print(len(x_features))
+# splitting variables
+K_FOLDS = 5
+VAL_SIZE = 0.20
 
 # get splits from k fold
-def get_kfold_splits(save_file, cv_splits, val_size):
+def get_kfold_splits(fname, cv_splits, val_size):
   fold_dict = {}
   i = 1
   sss = StratifiedShuffleSplit(n_splits=cv_splits, test_size=val_size, random_state=random_seed)
@@ -399,12 +453,16 @@ def get_kfold_splits(save_file, cv_splits, val_size):
     y_train, y_val = y_labels.iloc[train_idx], y_labels.iloc[val_idx]
     fold_dict[str(i)] = [x_train, x_val, y_train, y_val]
     i += 1
-  pickle_method(save_file, 'wb', fold_dict)
+  pickle_method(fname, 'wb', fold_dict)
   return fold_dict
 
-# splitting variables
-cv_splits = 5
-val_size = 0.20
+# split into training and validation sets
+y_labels = df_means['toxic']
+x_features = df_means.drop(['toxic', 'identifier', 'letter'], axis=1)
+
+# checking length
+print(len(y_labels))
+print(len(x_features))
 
 # getting k-fold splits
 # indexes:
@@ -412,36 +470,37 @@ val_size = 0.20
 # 1 -> x_val_vectorised
 # 2 -> y_train
 # 3 -> y_val
-k_folds_dict = get_kfold_splits(op_5_fold_p20, cv_splits, val_size)
+
+# k_folds_dict = get_kfold_splits(f_5_fold_p20, K_FOLDS, VAL_SIZE)
 
 # loading k-fold files
 
-fold_5_10p = pickle_method(op_5_fold_p10, 'rb', '')
+fold_5_10p = pickle_method(f_5_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_5_10p))
-fold_5_15p = pickle_method(op_5_fold_p15, 'rb', '')
+fold_5_15p = pickle_method(f_5_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_5_15p))
-fold_5_20p = pickle_method(op_5_fold_p20, 'rb', '')
+fold_5_20p = pickle_method(f_5_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_5_20p))
 
-fold_10_10p = pickle_method(op_10_fold_p10, 'rb', '')
+fold_10_10p = pickle_method(f_10_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_10_10p))
-fold_10_15p = pickle_method(op_10_fold_p15, 'rb', '')
+fold_10_15p = pickle_method(f_10_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_10_15p))
-fold_10_20p = pickle_method(op_10_fold_p20, 'rb', '')
+fold_10_20p = pickle_method(f_10_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_10_20p))
 
-fold_15_10p = pickle_method(op_15_fold_p10, 'rb', '')
+fold_15_10p = pickle_method(f_15_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_15_10p))
-fold_15_15p = pickle_method(op_15_fold_p15, 'rb', '')
+fold_15_15p = pickle_method(f_15_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_15_15p))
-fold_15_20p = pickle_method(op_15_fold_p20, 'rb', '')
+fold_15_20p = pickle_method(f_15_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_15_20p))
 
-fold_20_10p = pickle_method(op_20_fold_p10, 'rb', '')
+fold_20_10p = pickle_method(f_20_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_20_10p))
-fold_20_15p = pickle_method(op_20_fold_p15, 'rb', '')
+fold_20_15p = pickle_method(f_20_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_20_15p))
-fold_20_20p = pickle_method(op_20_fold_p20, 'rb', '')
+fold_20_20p = pickle_method(f_20_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_20_20p))
 
 # # print test
@@ -456,7 +515,7 @@ print('k-folds: ', len(fold_20_20p))
 """---
 
 
-# **Modelling**
+# **6. Modelling**
 """
 
 # fit model to data
