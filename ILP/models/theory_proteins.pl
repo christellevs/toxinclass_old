@@ -1,1 +1,0 @@
-theory_clause([toxic(A),position(A, B, C),start(A, C),end(A,C)],[toxic(+protein),position(+protein,+pos,+aminoacid),start(+protein,+aminoacid),end(+protein,+aminoacid)]).

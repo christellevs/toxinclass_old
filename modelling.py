@@ -305,7 +305,7 @@ m_linear_sgd_dict = run_model(m_linear_sgd, k_fold_dicts, f_m_linear_sgd)
 
 # model random forest: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 m_rfc = RandomForestClassifier(random_state=RANDOM_SEED)
-m_rfc_dict = run_model(m_rfc, k_fold_dicts, f_m_random_forest)
+m_rfc_dict = run_model(m_rfc, k_fold_dicts, f_m_random_foregit sst)
 
 # model decision tree: https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
 m_dt = DecisionTreeClassifier(random_state=RANDOM_SEED)
