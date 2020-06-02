@@ -1,8 +1,3 @@
-# module imports
-# import config as cfg
-import protein as prot
-import helper_functions as hp
-
 # other imports
 import Bio as bio
 import csv
@@ -12,9 +7,16 @@ import os.path
 import random
 import re
 import statistics
+import sys
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
+
+# module imports
+from modules.config import config as cfg
+from modules.protein import protein as prot
+from modules.helper_functions import helper_functions as hp
+
 
 # seed setting
 random.seed(cfg.RANDOM_SEED)
