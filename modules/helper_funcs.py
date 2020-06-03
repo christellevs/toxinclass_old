@@ -21,3 +21,7 @@ def cvs_to_df(fname, col_idx):
 # splits sequence, returns a list
 def split_seq(sequence):
   return [char for char in sequence]
+
+# SUMMARY FUNCTIONS
+def describe_df(df, decimal):
+    return df.describe().T[['mean', 'std', 'max','min', '25%','50%', '75%']].round(decimals=decimal)
