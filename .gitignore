@@ -1,0 +1,14 @@
+# dont add files with these extensions
+
+.pickle
+**/*.pickle
+
+.pkl
+**/*.pkl
+
+.vs/
+
+modules/__pycache__/
+
+*.pyc
+**/*.pyc
