@@ -3,7 +3,7 @@ import csv
 import importlib
 import io
 import numpy as np
-import os.path
+import os
 import pandas as pd
 import pickle
 import random
@@ -12,6 +12,7 @@ import statistics
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 
 import sys
 sys.path.insert(1, 'modules')
@@ -121,17 +122,17 @@ def proteins_to_df(proteins):
 ----------------------------------------------------------------------------- """
 
 # get splits from k fold
-def get_kfold_splits(x_features, y_labels):
+def get_kfold_splits(fname, x_features, y_labels):
   fold_dict = {}
   i = 1
   sss = StratifiedShuffleSplit(n_splits=cfg.K_FOLDS, test_size=cfg.VAL_SIZE,
                                random_state=cfg.RANDOM_SEED)
   print(sss)
-  print('Number of k-fold splits: ', sss.get_n_splits())
+  print(f'Number of k-fold splits: {sss.get_n_splits()}')
   for train_idx, val_idx in sss.split(x_features, y_labels):
     x_train, x_val = x_features.iloc[train_idx], x_features.iloc[val_idx]
     y_train, y_val = y_labels.iloc[train_idx], y_labels.iloc[val_idx]
     fold_dict[str(i)] = [x_train, x_val, y_train, y_val]
     i += 1
-  pickle_method(cfg.fname, 'wb', fold_dict)
+  pickle_method(fname, 'wb', fold_dict)
   return fold_dict

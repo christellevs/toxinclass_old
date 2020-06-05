@@ -38,8 +38,8 @@ print(len(x_features))
 # 2 -> y_train
 # 3 -> y_val
 
-# # k_folds_dict = get_kfold_splits(f_5_fold_p20, K_FOLDS, VAL_SIZE)
-
+k_folds_dict = hf.get_kfold_splits(cfg.f_k10_p10, x_features, y_labels)
+print(len(k_folds_dict))
 # # loading k-fold files
 
 # fold_5_10p = pickle_method(f_5_fold_p10, 'rb', '')

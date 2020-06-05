@@ -6,7 +6,6 @@
 
 import random
 
-
 RANDOM_SEED = 273
 
 # pre-processing
@@ -14,18 +13,21 @@ INVALID_AMINO = ['B', 'J', 'O', 'U', 'X', 'Z']
 MAX_SEQ_LEN = 500
 
 # splitting
-K_FOLDS = 5
-VAL_SIZE = 0.20
-
+K_FOLDS = 10
+VAL_SIZE = 0.1
 
 # FILEPATHS
 # -----------------------------------------------------------------------------
 
 # common paths
-PATH_DATA_TRAIN = 'data/datasets/training_data'
-PATH_DATA_BENCH = 'data/datasets/benchmark_data'
-PATH_DATA_TEST = 'data/datasets/testing_data'
+PATH_DATASETS = 'data/datasets'
+
+PATH_DATA_TRAIN = PATH_DATASETS + '/training_data'
+PATH_DATA_BENCH = PATH_DATASETS + '/benchmark_data'
+PATH_DATA_TEST =  PATH_DATASETS + '/testing_data'
+
 PATH_DATA_REFS = 'data/data_refs'
+PATH_DATA_SPLITS = 'data/data_splits'
 
 
 # MAIN DATA
@@ -58,13 +60,17 @@ f_atchley_df = PATH_DATA_REFS + '/atchley_df.pickle'
 
 # DATASET SPLITTING
 # -------------------------------------
+# filename format: kN_pM
+# kn == no. of splits
+# pM == % taken for split
 
 # # k-fold cross validation dictionaries
+
 # f_5_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p10.pickle'
 # f_5_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p15.pickle'
 # f_5_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/5_fold_p20.pickle'
 
-# f_10_fold_p10 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p10.pickle'
+f_k10_p10 = PATH_DATA_SPLITS + '/k10_p10.pickle'
 # f_10_fold_p15 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p15.pickle'
 # f_10_fold_p20 = PATH_TO_FOLDER + '/pre_processing_files/data_splits/10_fold_p20.pickle'
 
