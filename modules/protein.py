@@ -1,3 +1,6 @@
+
+import numpy as np
+
 # PROTEIN PROCESSING FUNCTIONS START
 # -----------------------------------------------------------------------------
 
@@ -13,31 +16,7 @@ class Protein:
     self.matrix_raw = np.zeros((5, length))
     self.matrix_diff = np.zeros((5, length))
 
-  def to_dict_raw(self):
-    return {'identifier': self.identifier,
-            'toxic': self.toxic,
-            'length': self.length,
-            'sequence': self.sequence,
-            'f1_raw': self.matrix_raw[0],
-            'f2_raw': self.matrix_raw[1],
-            'f3_raw': self.matrix_raw[2],
-            'f4_raw': self.matrix_raw[3],
-            'f5_raw': self.matrix_raw[4],
-            'atchley_raw_avg': np.average(self.matrix_raw, axis=0)}
-
-  def to_dict_diff(self):
-    return {'identifier': self.identifier,
-            'toxic': self.toxic,
-            'length': self.length,
-            'sequence': self.sequence,
-            'f1_diff': self.matrix_diff[0],
-            'f2_diff': self.matrix_diff[1],
-            'f3_diff': self.matrix_diff[2],
-            'f4_diff': self.matrix_diff[3],
-            'f5_diff': self.matrix_diff[4],
-            'atchley_diff_avg': np.average(self.matrix_diff, axis=0)}
-
-  def to_dict_combined(self):
+  def to_dict(self):
     return {'identifier': self.identifier,
             'toxic': self.toxic,
             'length': self.length,
