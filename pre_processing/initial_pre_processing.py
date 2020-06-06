@@ -20,8 +20,8 @@ import helper_funcs as hf
 import visual_funcs as vf
 import protein as prot
 
-""" PRE-PROCESSING TRAINING SET
------------------------------------------------------------------------------ """
+# PRE-PROCESSING TRAINING SET
+# -----------------------------------------------------------------------------
 
 # PARSING FASTA
 toxic_proteins = hf.parse_fasta(cfg.f_train_toxic_fasta, 1)
@@ -32,8 +32,8 @@ print(f'Total toxic sequences: {len(toxic_proteins)}')
 print(f'Total atoxic sequences: {len(atoxic_proteins)}')
 
 
-"""  DOWNSAMPLING
------------------------------------------------------------------------------ """
+# DOWNSAMPLING
+# -----------------------------------------------------------------------------
 
 toxic_proteins = hf.crop_sequences(toxic_proteins)
 atoxic_proteins = hf.crop_sequences(atoxic_proteins)
@@ -47,8 +47,8 @@ atoxic_proteins = resample(atoxic_proteins, replace=False, n_samples=total_toxic
 print(f'Total protein sequences in atoxic list post-downsampling: {len(atoxic_proteins)}')
 
 
-""" COMBINING & APPENDING
------------------------------------------------------------------------------ """
+# COMBINING & APPENDING
+# -----------------------------------------------------------------------------
 
 proteins = toxic_proteins + atoxic_proteins
 hf.append_proteins(proteins)

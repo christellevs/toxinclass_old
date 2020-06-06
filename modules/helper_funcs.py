@@ -22,8 +22,8 @@ import config as cfg
 import data_references as dr
 import protein as prot
 
-"""  COMMON FUNCIONS
------------------------------------------------------------------------------ """
+# COMMON FUNCIONS
+# -----------------------------------------------------------------------------
 # writes or reads data to/from a binary file
 def pickle_method(fname, method, context):
     if method == 'wb':
@@ -41,8 +41,8 @@ def split_seq(sequence):
   return [char for char in sequence]
 
 
-"""  PRE-PROCESSING FUNCIONS
------------------------------------------------------------------------------ """
+# PRE-PROCESSING FUNCIONS
+# -----------------------------------------------------------------------------
 
 def crop_sequences(protein_list):
   return [p for p in protein_list if p.length <= cfg.MAX_SEQ_LEN]
@@ -58,7 +58,9 @@ def parse_fasta(path_fasta, is_toxic):
   return sequences
 
 
-""" ATHCLEY VALUES """
+# ATHCLEY VALUES
+# ---------------------------------------
+
 # get atchley values - returns list of values
 def get_atchley_values_list(letters, idx):
   return [float(dr.dict_atchley.get(i)[idx]) for i in letters]
@@ -94,7 +96,9 @@ def append_atchley_values(proteins_list):
     get_atchley_diff(protein.seq_dict_raw, protein.seq_dict_diff)
     
 
-""" MATRICES """
+# MATRICES VALUES
+# ---------------------------------------
+
 # returns matrix from input dictionary
 def get_matrix_values(seq_dict):
   return np.array([seq_dict[i] for i in seq_dict.keys()])
@@ -118,8 +122,8 @@ def proteins_to_df(proteins):
   
 
 
-"""  SPLTITING FUNCIONS
------------------------------------------------------------------------------ """
+# SPLTITING FUNCIONS
+# -----------------------------------------------------------------------------
 
 # get splits from k fold
 def get_kfold_splits(fname, x_features, y_labels):
