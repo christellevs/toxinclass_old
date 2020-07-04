@@ -15,11 +15,16 @@ from sklearn.utils import resample
 import sys
 sys.path.insert(1, 'modules')
 
+# module imports
+import config as cfg
+import data_references as dr
+import helper_funcs as hf
+
 random.seed(cfg.RANDOM_SEED)
 
 
 # Loading Pre-Processed datasets
-df_combined = pickle_method(f_train_atchley_combined, 'rb', '')
+df_combined = hf.pickle_method(f_train_atchley_combined, 'rb', '')
 df_combined.head(5)
 
 # -----------------------------------------------------------------------------
@@ -49,7 +54,7 @@ def get_kfold_splits(fname):
     y_train, y_val = y_labels.iloc[train_idx], y_labels.iloc[val_idx]
     fold_dict[str(i)] = [x_train, x_val, y_train, y_val]
     i += 1
-  pickle_method(fname, 'wb', fold_dict)
+  hf.pickle_method(fname, 'wb', fold_dict)
 
 # get splits from k fold
 def get_kfold_dict():
@@ -78,32 +83,32 @@ get_kfold_splits(f_20_fold_p20)
 
 # loading k-fold files
 
-fold_5_10p = pickle_method(f_5_fold_p10, 'rb', '')
+fold_5_10p = hf.pickle_method(f_5_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_5_10p))
-fold_5_15p = pickle_method(f_5_fold_p15, 'rb', '')
+fold_5_15p = hf.pickle_method(f_5_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_5_15p))
-fold_5_20p = pickle_method(f_5_fold_p20, 'rb', '')
+fold_5_20p = hf.pickle_method(f_5_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_5_20p))
 
-fold_10_10p = pickle_method(f_10_fold_p10, 'rb', '')
+fold_10_10p = hf.pickle_method(f_10_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_10_10p))
-fold_10_15p = pickle_method(f_10_fold_p15, 'rb', '')
+fold_10_15p = hf.pickle_method(f_10_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_10_15p))
-fold_10_20p = pickle_method(f_10_fold_p20, 'rb', '')
+fold_10_20p = hf.pickle_method(f_10_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_10_20p))
 
-fold_15_10p = pickle_method(f_15_fold_p10, 'rb', '')
+fold_15_10p = hf.pickle_method(f_15_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_15_10p))
-fold_15_15p = pickle_method(f_15_fold_p15, 'rb', '')
+fold_15_15p = hf.pickle_method(f_15_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_15_15p))
-fold_15_20p = pickle_method(f_15_fold_p20, 'rb', '')
+fold_15_20p = hf.pickle_method(f_15_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_15_20p))
 
-fold_20_10p = pickle_method(f_20_fold_p10, 'rb', '')
+fold_20_10p = hf.pickle_method(f_20_fold_p10, 'rb', '')
 print('k-folds: ', len(fold_20_10p))
-fold_20_15p = pickle_method(f_20_fold_p15, 'rb', '')
+fold_20_15p = hf.pickle_method(f_20_fold_p15, 'rb', '')
 print('k-folds: ', len(fold_20_15p))
-fold_20_20p = pickle_method(f_20_fold_p20, 'rb', '')
+fold_20_20p = hf.pickle_method(f_20_fold_p20, 'rb', '')
 print('k-folds: ', len(fold_20_20p))
 
 """**Single Dictionary**"""
