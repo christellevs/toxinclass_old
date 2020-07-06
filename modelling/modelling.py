@@ -2,8 +2,6 @@ import io
 import itertools as ite
 import numpy as np
 import pandas as pd
-import pickle
-import os.path
 import random
 import statistics
 

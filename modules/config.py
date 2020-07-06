@@ -5,6 +5,7 @@
 # ToxClassifier: https://github.com/rgacesa/ToxClassifier
 
 import random
+import helper_funcs as hf
 
 RANDOM_SEED = 273
 
@@ -56,6 +57,9 @@ f_atchley = PATH_DATA_REFS + '/atchley.txt'
 # processed ref data
 f_atchley_dict = PATH_DATA_REFS + '/atchley_dict.pickle'
 f_atchley_df = PATH_DATA_REFS + '/atchley_df.pickle'
+
+DICT_ATCHLEY = hf.pickle_method(f_atchley_dict, 'rb', '')
+
 
 
 # DATASET SPLITTING
