@@ -38,19 +38,20 @@ def get_positions_lines(fname:str, proteins:List[prot.Protein]) -> None:
                   (parse_identifier(p.identifier), (idx + 1), amino.lower() ))
 
 
-def separate_proteins(proteins, is_toxic:str):
-  return [prot for prot in proteins if prot.toxic == is_toxic]
+def separate_proteins(proteins:List[prot.Protein]) -> List[prot.Protein]:
+  """Separate proteins into different lists depending on toxicity."""
+  toxic_proteins = [prot for prot in proteins if prot.toxic == 1]
+  atoxic_proteins = [prot for prot in proteins if prot.toxic == 0]
+  return toxic_proteins, atoxic_proteins
   
 
-def get_examples(f, protein_list):
-  if protein_list[0].toxic == 1:
-    for p in protein_list:
-      f.write('\nexample(toxic(p_%s),1).' % (parse_identifier(p.identifier)))
-      print('\nexample(toxic(p_%s),1).' % (parse_identifier(p.identifier)))
-  if protein_list[0].toxic == 0:
-    for p in protein_list:
-      f.write('\nexample(toxic(p_%s),-1).' % (parse_identifier(p.identifier)))
-      print('\nexample(toxic(p_%s),-1).' % (parse_identifier(p.identifier)))
+def get_examples(fname:str, proteins:List[prot.Protein]) -> None:
+  if proteins[0].toxic == 1:
+    for p in proteins:
+      fname.write('\nexample(toxic(p_%s),1).' % (parse_identifier(p.identifier)))
+  if proteins[0].toxic == 0:
+    for p in proteins:
+      fname.write('\nexample(toxic(p_%s),-1).' % (parse_identifier(p.identifier)))
       
 # -----------------------------------------------------------------------------
 
@@ -63,8 +64,7 @@ print(f'Number of proteins {len(train_proteins)}')
 # cropping protein sequences
 train_proteins_crop = hf.crop_sequences(train_proteins)
 
-toxic_proteins = separate_proteins(train_proteins_crop, 1)
-atoxic_proteins = separate_proteins(train_proteins_crop, 0)
+toxic_proteins, atoxic_proteins = separate_proteins(train_proteins_crop)
 
 print(f'Number of toxic proteins {len(toxic_proteins)}')
 print(f'Number of atoxic proteins {len(atoxic_proteins)}')
@@ -77,8 +77,13 @@ atoxic_prot_down = resample_proteins(atoxic_proteins)
 print(f'Number of downsampled toxic proteins {len(toxic_prot_down)}')
 print(f'Number of downsampled atoxic proteins {len(atoxic_prot_down)}')
 
+downsampled_proteins = toxic_prot_down + atoxic_prot_down
+
 # -----------------------------------------------------------------------------
 # WRITING TO FILES
 
-hf.write_to_file(cfg.f_ILP_positions, toxic_prot_down, get_positions_lines)
-hf.write_to_file(cfg.f_ILP_positions, atoxic_prot_down, get_positions_lines)
+# positions
+hf.write_to_file(cfg.f_ILP_positions, downsampled_proteins, get_positions_lines)
+
+# examples
+hf.write_to_file(cfg.f_ILP_examples, downsampled_proteins, get_examples)
