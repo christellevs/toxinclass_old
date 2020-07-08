@@ -46,12 +46,12 @@ def separate_proteins(proteins:List[prot.Protein]) -> List[prot.Protein]:
   
 
 def get_examples(fname:str, proteins:List[prot.Protein]) -> None:
-  if proteins[0].toxic == 1:
-    for p in proteins:
+  for p in proteins:
+    if p.toxic == 1:
       fname.write('\nexample(toxic(p_%s),1).' % (parse_identifier(p.identifier)))
-  if proteins[0].toxic == 0:
-    for p in proteins:
+    else:
       fname.write('\nexample(toxic(p_%s),-1).' % (parse_identifier(p.identifier)))
+      
       
 # -----------------------------------------------------------------------------
 
