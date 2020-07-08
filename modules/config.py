@@ -14,7 +14,7 @@ RANDOM_SEED = 273
 # pre-processing
 INVALID_AMINO = ['B', 'J', 'O', 'U', 'X', 'Z']
 MAX_SEQ_LEN = 500
-MAX_PROT_NUM = 200
+MAX_PROT_NUM = 300
 
 # splitting
 K_FOLDS = 10
