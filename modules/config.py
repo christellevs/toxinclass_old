@@ -7,22 +7,28 @@
 import random
 import helper_funcs as hf
 
+# -----------------------------------------------------------------------------
+
 RANDOM_SEED = 273
 
 # pre-processing
 INVALID_AMINO = ['B', 'J', 'O', 'U', 'X', 'Z']
 MAX_SEQ_LEN = 500
+MAX_PROT_NUM = 200
 
 # splitting
 K_FOLDS = 10
 VAL_SIZE = 0.1
+
 
 # FILEPATHS
 # -----------------------------------------------------------------------------
 
 # common paths
 PATH_DATASETS = 'data/datasets'
+PATH_ILP_PROCESS = 'ILP/ILP_content'
 
+# data files
 PATH_DATA_TRAIN = PATH_DATASETS + '/training_data'
 PATH_DATA_BENCH = PATH_DATASETS + '/benchmark_data'
 PATH_DATA_TEST =  PATH_DATASETS + '/testing_data'
@@ -51,15 +57,24 @@ f_train_df = PATH_DATA_TRAIN + '/train_df.pickle'
 
 # REFERENCE DATA
 # -------------------------------------
+
+# files
 f_aminoacid = PATH_DATA_REFS + '/aminoacids.csv'
 f_atchley = PATH_DATA_REFS + '/atchley.txt'
 
-# processed ref data
 f_atchley_dict = PATH_DATA_REFS + '/atchley_dict.pickle'
 f_atchley_df = PATH_DATA_REFS + '/atchley_df.pickle'
 
+# references
 DICT_ATCHLEY = hf.pickle_method(f_atchley_dict, 'rb', '')
 
+
+# ILP FILES
+# -------------------------------------
+f_ILP_classes = PATH_ILP_PROCESS + '/classes.pl'
+f_ILP_nclasses = PATH_ILP_PROCESS + '/nclasses.pl'
+f_ILP_positions = PATH_ILP_PROCESS + '/positions.pl'
+f_ILP_examples = PATH_ILP_PROCESS + '/examples.pl'
 
 
 # DATASET SPLITTING

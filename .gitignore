@@ -8,7 +8,15 @@
 
 .vs/
 
+# pycache
 modules/__pycache__/
 
 *.pyc
 **/*.pyc
+
+**/__pycache__
+**/modules/__pycache__/config.cpython-38.pyc
+**/config.cpython-38.pyc
+
+# testing files
+test.py
