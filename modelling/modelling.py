@@ -43,6 +43,7 @@ sss = StratifiedShuffleSplit(n_splits=cfg.K_FOLDS, test_size=cfg.VAL_SIZE, rando
 
 # get splits from k fold
 def get_kfold_splits(fname):
+  """"""
   fold_dict = {}
   i = 1
   print(sss)
@@ -153,8 +154,10 @@ from sklearn.tree import DecisionTreeClassifier
 # MODELLING FUNCTIONS START
 # -----------------------------------------------------------------------------
 
-# fit model to data
 def fit_model_to_folds(model, k_folds_dict):
+  """
+  Fits the model to data.
+  """
   scores = []
   i = 1
   for fold in k_folds_dict:
@@ -167,8 +170,10 @@ def fit_model_to_folds(model, k_folds_dict):
   print("\nMean model score: %.3f" % mean_score)
   return mean_score
 
-# run model, save results to dictionary
 def run_model(model, k_folds_dicts, filename):
+  """
+  Runs model, save results to dictionary.
+  """
   model_results = {}
   for key, value in k_folds_dicts.items():
     print('\nCV:', key)
@@ -178,6 +183,9 @@ def run_model(model, k_folds_dicts, filename):
 
 # run all models, save results to a dictionary of dictionaries
 def run_all_models(models, k_fold_dicts):
+  """
+  
+  """
   models_dict = {}
   for model in models:
     print('\nModel:', model)

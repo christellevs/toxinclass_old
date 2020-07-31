@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 import sklearn
 import statistics
@@ -8,8 +9,10 @@ from textwrap import wrap
 # -----------------------------------------------------------------------------
 # GRAPH FUNCTIONS
 
-# make distribution plot
 def dist_graph(df, x_dim, y_dim, x_axis_col, title, x_label, y_label, colour, bins):
+  """
+  Creates a distribution graph.
+  """
   sns.set(style='whitegrid')
   fig = plt.subplots(figsize=(x_dim, y_dim))
   dist = np.asarray(df[[x_axis_col]].values.tolist()).ravel()
@@ -21,9 +24,12 @@ def dist_graph(df, x_dim, y_dim, x_axis_col, title, x_label, y_label, colour, bi
   ax.set_xlabel(x_label, fontsize=16)
   ax.set_ylabel(y_label, fontsize=16)
   
-# SUMMARY FUNCTIONS
+
 def describe_df(df, decimal):
-    return df.describe().T[['mean', 'std', 'max','min', '25%','50%', '75%']].round(decimals=decimal)
+  """
+  Describes a DataFrame table.
+  """
+  return df.describe().T[['mean', 'std', 'max','min', '25%','50%', '75%']].round(decimals=decimal)
   
 
 # a = [1, 3, 5, 44, 5]

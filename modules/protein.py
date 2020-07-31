@@ -17,6 +17,8 @@ class Protein:
     self.matrix_diff = np.zeros((5, length))
 
   def to_dict(self):
+    """
+    """
     return {'identifier': self.identifier,
             'toxic': self.toxic,
             'length': self.length,
@@ -35,3 +37,5 @@ class Protein:
             'f4_diff': self.matrix_diff[3],
             'f5_diff': self.matrix_diff[4],
             'atchley_diff_avg': np.average(self.matrix_diff, axis=0)}
+    
+# -----------------------------------------------------------------------------

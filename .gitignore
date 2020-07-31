@@ -2,7 +2,6 @@
 
 .pickle
 **/*.pickle
-
 .pkl
 **/*.pkl
 
@@ -17,6 +16,8 @@ modules/__pycache__/
 **/__pycache__
 **/modules/__pycache__/config.cpython-38.pyc
 **/config.cpython-38.pyc
+
+*.venv
 
 # testing files
 test.py

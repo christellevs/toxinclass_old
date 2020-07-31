@@ -1,4 +1,3 @@
-
 import io
 import itertools as ite
 import numpy as np
@@ -20,6 +19,8 @@ import data_references as dr
 import helper_funcs as hf
 import visual_funcs as vf
 import protein as prot
+
+# -----------------------------------------------------------------------------
 
 df_proteins = hf.pickle_method(cfg.f_train_df, 'rb', '')
 

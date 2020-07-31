@@ -20,9 +20,9 @@ import helper_funcs as hf
 import visual_funcs as vf
 import protein as prot
 
-# PRE-PROCESSING TRAINING SET
 # -----------------------------------------------------------------------------
 
+# PRE-PROCESSING TRAINING SET
 # PARSING FASTA
 toxic_proteins = hf.parse_fasta(cfg.f_train_toxic_fasta, 1)
 atoxic_proteins = hf.parse_fasta(cfg.f_train_atoxic_fasta, 0)
@@ -64,3 +64,6 @@ df_proteins.info()
 
 print('\nChecking value counts for each class in df combined:\n1 == toxic\n0 == atoxic\n----------')
 print(df_proteins['toxic'].value_counts())
+
+
+# -----------------------------------------------------------------------------
