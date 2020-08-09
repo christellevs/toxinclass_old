@@ -14,8 +14,8 @@ from typing import List, Dict
 
 # local imports
 
-import config as cfg
-import protein as prot
+import toxinclass.config as cfg
+import toxinclass.protein as prot
 
 # -----------------------------------------------------------------------------
 
