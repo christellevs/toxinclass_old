@@ -3,7 +3,7 @@ import pandas as pd
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
-from typing import List
+from typing import List, Dict
 
 # local imports
 import toxinclass.config as cfg
