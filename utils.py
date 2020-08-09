@@ -60,7 +60,7 @@ def df_to_csv(df:pd.DataFrame, filename:str, sep:str) -> pd.DataFrame:
   return df.to_csv(filename, sep, encoding='utf-8')
 
 
-def cvs_to_df(filename:str, sep:str='.', col_idx:int=0) -> pd.DataFrame:
+def cvs_to_df(filename:str, sep:str, col_idx:int) -> pd.DataFrame:
   """
   Converts a .csv file to a DataFrame.
   """
