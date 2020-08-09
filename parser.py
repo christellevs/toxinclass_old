@@ -6,9 +6,9 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 from typing import List
 
 # local imports
-import .config as cfg
-import .protein as prot
-import .utils as u
+import toxinclass.config as cfg
+import toxinclass.protein as prot
+import toxinclass.utils as u
 
 # -----------------------------------------------------------------------------
 
