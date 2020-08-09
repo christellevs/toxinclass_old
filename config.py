@@ -6,11 +6,6 @@
 
 import random
 
-import sys
-sys.path.insert(1, 'modules')
-
-import utils as u
-
 # -----------------------------------------------------------------------------
 
 RANDOM_SEED = 273
