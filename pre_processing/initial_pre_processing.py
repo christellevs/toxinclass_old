@@ -50,8 +50,8 @@ print(f'Total protein sequences in atoxic list post-downsampling: {len(atoxic_pr
 # COMBINING & APPENDING
 # -----------------------------------------------------------------------------
 
-proteins = toxic_proteins + atoxic_proteins
-hf.append_proteins(proteins)
+# TODO
+
 
 print(f'Total overall protein sequences: {len(proteins)}')
 print(proteins[0].matrix_diff)

@@ -16,13 +16,7 @@ class Protein:
     self.matrix_raw = np.zeros((5, length))
     self.matrix_diff = np.zeros((5, length))
 
-  def proteins_to_df(self, proteins:prot.Protein) -> pd.DataFrame:
-    """
-    Returns a DataFrame from a list of proteins.
-    """
-    df = pd.DataFrame.from_records([p.to_dict() for p in proteins])
-    pickle_method(cfg.f_train_df, 'wb', df)
-    return df
+
   
 
   def _to_dict(self):
@@ -49,33 +43,7 @@ class Protein:
             'atchley_diff_avg': np.average(self.matrix_diff, axis=0)}
     
     
-      # MATRICES VALUES
-  # ---------------------------------------
 
-  def _get_matrix_values(self, seq_dict):
-    """
-    Returns matrix from input dictionary.
-    """
-    return np.array([seq_dict[i] for i in seq_dict.keys()])
-
-
-  def update_matrices(self, protein_seq_list):
-    """
-    Updates both matrices.
-    """
-    for protein in protein_seq_list:
-      protein.matrix_raw = get_matrix_values(protein.seq_dict_raw)
-      protein.matrix_diff = get_matrix_values(protein.seq_dict_diff)
-      
-  def append_proteins(self, proteins):
-    """
-    Appends Atchley values to the Protein object matrices.
-    """
-    append_atchley_values(proteins)
-    update_matrices(proteins)
-    pickle_method(cfg.f_train_proteins, 'wb', proteins)
   
 
-    
-    
 # -----------------------------------------------------------------------------

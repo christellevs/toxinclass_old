@@ -1,4 +1,3 @@
-import Bio as bio
 import csv
 import importlib
 import io
@@ -10,8 +9,6 @@ import random
 import re
 import statistics
 
-from Bio import SeqIO
-from Bio.SeqIO.FastaIO import SimpleFastaParser
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from typing import List, Dict
 
@@ -23,68 +20,50 @@ import protein as prot
 
 # FILE RELATED FUNCTIONS
 
-def pickle_method(fname:str, method:str, context=''):
+def pickle_method(filename:str, method:str, context=''):
   """
   Pickles/unpickles a file to a binary file.
   """
   if method == 'wb':
-      return pickle.dump(context, open(fname, method))
+      return pickle.dump(context, open(filename, method))
   elif method == 'rb':
-      return pickle.load(open(fname, method))
+      return pickle.load(open(filename, method))
     
     
-def write_to_file(fname:str, context, function) -> None:
+def write_to_file(filename:str, context, function) -> None:
   """
   Writes to file.
   """
-  with open(fname, 'w') as f:
+  with open(filename, 'w') as f:
     function(f, context)
   f.close()
   
+  
+def directify_name(name:str) -> str:
+    """
+    In case name has spaces, returns string with directory divider
+    """
+    return str(cfg.DIR_DIV.join(name.split()))
 
-def df_to_csv(df:pd.DataFrame, fname:str, sep:str) -> pd.DataFrame:
+def add_fname_ext(fname:str, ext:str) -> str:
+    """
+    Appends extension to a filename.
+    """
+    return fname + ext
+  
+
+def df_to_csv(df:pd.DataFrame, filename:str, sep:str) -> pd.DataFrame:
   """
   Converts a DataFrame to a .csv file.
   """
-  return df.to_csv(fname, sep, encoding='utf-8')
+  return df.to_csv(filename, sep, encoding='utf-8')
 
 
-def cvs_to_df(fname:str, col_idx:int):
+def cvs_to_df(filename:str, col_idx:int):
   """
   Converts a .csv file to a DataFrame.
   """
-  return pd.read_csv(fname, index_col=col_idx, encoding='utf-8')
-
-
-def split_seq(sequence:str) -> List[str]:
-  """
-  Splits string qeuence returns list.
-  """
-  return [char for char in sequence]
-
-
-# PRE-PROCESSING FUNCIONS
-# ----------------------------------------------------------
-
-def crop_sequences(proteins: prot.Protein) -> List[prot.Protein]:
-  """
-  Returns protein sequences that are less than the specified length.
-  """
-  return [p for p in proteins if p.length <= cfg.MAX_SEQ_LEN]
-
-
-def parse_fasta(path_fasta:str, is_toxic:int) -> List[str]:
-  """
-  Parses .fasta files into a list of Protein objects.
-  """
-  sequences = []
-  with open(path_fasta) as fasta_file:
-    for title, sequence in SimpleFastaParser(fasta_file):
-      if not any(ele in sequence for ele in cfg.INVALID_AMINO):
-        sequences.append( prot.Protein(title.split(None, 1)[0],
-                                        is_toxic, len(sequence), split_seq(sequence)) )
-  return sequences
-    
+  return pd.read_csv(filename, index_col=col_idx, encoding='utf-8')
 
 
 # SPLTITING FUNCIONS
@@ -107,6 +86,7 @@ def get_kfold_splits(fname:str, x_features, y_labels):
     i += 1
   pickle_method(fname, 'wb', fold_dict)
   return fold_dict
+
 
 
 # -----------------------------------------------------------------------------

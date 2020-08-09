@@ -1,62 +1,62 @@
 
+import pandas as pd
+import pprint as p
 
+from typing import List, Dict
+
+# local imports
+import config as cfg
+import utils as u
 
 # -----------------------------------------------------------------------------
 
-class Atchley:
+class Atchley:    
+    def __init__(self, f_in_atchley:str, f_out_atchley:str):
+        self.f_in_atchley = f_in_atchley
+        self.f_out_atchley = f_out_atchley
+        
+    def get_atchley_dict(self) -> Dict[str, List[float]]:
+        """
+        Returns a parsed Dictionary of the 5 Atchley values per amino acid in a list.
+        """
+        return u.pickle_method(self.f_out_atchley, 'rb', '')
+
+    def parse_atchley(self) -> None:
+        """
+        Parses a .txt file containing Atchley values into a dataframe for easy manipulation.
+        Pickles the file for later use.
+        """
+        df = self._atchley_to_df(f_in_atchley=self.f_in_atchley)
+        df = self._fix_text(df=df)
+        self._atchley_to_dict(df=df, f_atchley_dict=self.f_atchley_dict)
+        
+    # -------------------------------------------------
+
+    def _atchley_to_dict(self, df:pd.DataFrame, f_out_atchley:str) -> Dict:
+        """
+        Takes in a DataFrame of Atchley values and returns it as a Dict.
+        """
+        dict_atchley = df.T.to_dict('list')
+        u.pickle_method(f_out_atchley, 'wb', dict_atchley)
+        return dict_atchley
     
-    def __init__(self):
-        
-        
-    def to_dict(self):
-        return 
-        
-
-    def _get_atchley_values_list(self, aminos:List[str], idx:int) -> List[int]:
+    def _atchley_to_df(self, f_in_atchley:str) -> pd.DataFrame:
         """
-        Returns all atchley values in a list for a specific amino acid.
+        Takes in .txt file containing Atchley values.
+        Returns values in a pandas DataFrame.
         """
-        
-        return [float(cfg.DICT_ATCHLEY.get(i)[idx]) for i in aminos]
-
-
-    def _get_atchley_values_raw(self, sequence, seq_dict_r):
-        """
-        Returns raw atchley values in a dictionary.
-        """
-        seq_dict_r['f1'] = get_atchley_values_list(sequence, 0)
-        seq_dict_r['f2'] = get_atchley_values_list(sequence, 1)
-        seq_dict_r['f3'] = get_atchley_values_list(sequence, 2)
-        seq_dict_r['f4'] = get_atchley_values_list(sequence, 3)
-        seq_dict_r['f5'] = get_atchley_values_list(sequence, 4)
-
-    # -----------------------------------------------
-
-    def _get_change_list(self, atchley_list):
-        """
-        Calculates sequential change for single atchley value.
-        """
-        atchley_list.insert(0, 0)
-        change_list = [i for i in (np.diff(atchley_list))]
-        atchley_list.pop(0)
-        return change_list
-
-
-    def get_atchley_diff(self, seq_dict_r, seq_dict_d):
-        """
-        Returns the sequential change for each atchley value as a dictionary.
-        """
-        seq_dict_d['f1_d'] = get_change_list(seq_dict_r.get('f1'))
-        seq_dict_d['f2_d'] = get_change_list(seq_dict_r.get('f2'))
-        seq_dict_d['f3_d'] = get_change_list(seq_dict_r.get('f3'))
-        seq_dict_d['f4_d'] = get_change_list(seq_dict_r.get('f4'))
-        seq_dict_d['f5_d'] = get_change_list(seq_dict_r.get('f5'))
+        df = u.cvs_to_df(filename=f_in_atchley, col_idx=0)
+        df.rename(columns={'amino.acid': 'amino_acid'}, inplace=True)
+        df.set_index('amino_acid', inplace=True)
+        return df
     
-    
-    def append_atchley_values(self, proteins_list):
+    def _fix_text(self, df:pd.DataFrame) -> pd.DataFrame:
         """
-        Appends the atchley values to the dictionary of a ProteinSequence object.
+        Ensures dash in the original Atchley test is a negative sign.
         """
-        for protein in proteins_list:
-            get_atchley_values_raw(protein.sequence, protein.seq_dict_raw)
-            get_atchley_diff(protein.seq_dict_raw, protein.seq_dict_diff)
+        for col in df['f1': 'f5']:
+            df[col] = df[col].apply(lambda x: re.sub(r'[^\x00-\x7F]+','-', x)).astype(float)
+        return df
+
+# -----------------------------------------------------------------------------
+
