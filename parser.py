@@ -69,12 +69,12 @@ def proteins_to_df(proteins:prot.Protein) -> pd.DataFrame:
     return df
 
 
-def get_atchley_values_list(aminos:List[str], idx:int) -> List[int]:
+def get_atchley_values_list(aminos:List[str], atchley_dict: Dict[str, List[int]], idx:int) -> List[int]:
     """
     Returns all atchley values in a list for a specific amino acid.
     """
     
-    return [float(cfg.DICT_ATCHLEY.get(i)[idx]) for i in aminos]
+    return [float(atchley_dict.get(i)[idx]) for i in aminos]
 
 
 def get_atchley_values_raw(sequence, seq_dict_r):
