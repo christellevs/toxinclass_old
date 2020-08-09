@@ -6,9 +6,9 @@ from Bio.SeqIO.FastaIO import SimpleFastaParser
 from typing import List
 
 # local imports
-import config as cfg
-import protein as prot
-import utils as u
+import .config as cfg
+import .protein as prot
+import .utils as u
 
 # -----------------------------------------------------------------------------
 
