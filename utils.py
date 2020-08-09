@@ -13,8 +13,9 @@ from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from typing import List, Dict
 
 # local imports
-from . import config as cfg
-from . import protein as prot
+
+import config as cfg
+import protein as prot
 
 # -----------------------------------------------------------------------------
 
@@ -59,11 +60,11 @@ def df_to_csv(df:pd.DataFrame, filename:str, sep:str) -> pd.DataFrame:
   return df.to_csv(filename, sep, encoding='utf-8')
 
 
-def cvs_to_df(filename:str, col_idx:int):
+def cvs_to_df(filename:str, sep:str='.', col_idx:int=0) -> pd.DataFrame:
   """
   Converts a .csv file to a DataFrame.
   """
-  return pd.read_csv(filename, index_col=col_idx, encoding='utf-8')
+  return pd.read_csv(filename, sep=sep, index_col=col_idx, encoding='utf-8')
 
 
 # SPLTITING FUNCIONS
