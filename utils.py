@@ -13,8 +13,8 @@ from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 from typing import List, Dict
 
 # local imports
-from toxinclass import config as cfg
-from toxinclass import protein as prot
+from . import config as cfg
+from . import protein as prot
 
 # -----------------------------------------------------------------------------
 

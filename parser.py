@@ -18,7 +18,7 @@ def parse_fasta(path_fasta:str, is_toxic:int) -> List[str]:
     Parses .fasta files into a list of Protein objects.
     """
     sequences = []
-    with open(path_fasta) as fasta_file:
+    with open(path_fasta) as fasta_filpe:
         for title, sequence in SimpleFastaParser(fasta_file):
             if not any(ele in sequence for ele in cfg.INVALID_AMINO):
                 sequences.append( prot.Protein(title.split(None, 1)[0],
